@@ -1,1163 +1,1488 @@
-// Константы и типы
-const STORAGE_KEYS = {
-    reports: 'motodiag_reports',
-    inspections: 'motodiag_inspections',
-    form: 'motodiag_form',
-    settings: 'motodiag_settings',
-};
+// МотоДиагностика PRO - Основная логика приложения
 
-const MODELS_BY_BRAND = {
-    Yamaha: ['MT-07', 'MT-09', 'YZF-R1', 'YZF-R6', 'YZF-R3', 'XMAX', 'TMAX', 'Tracer 9', 'XSR900'],
-    Honda: ['CBR1000RR', 'CBR650R', 'CB500F', 'Africa Twin', 'Rebel 500', 'Gold Wing', 'NC750X'],
-    Kawasaki: ['Ninja ZX-10R', 'Ninja 650', 'Z900', 'Versys 650', 'Vulcan S', 'KLX230'],
-    Suzuki: ['GSX-R1000', 'GSX-R750', 'GSX-S1000', 'V-Strom 650', 'SV650', 'Hayabusa'],
-    BMW: ['S1000RR', 'R1250GS', 'F900R', 'R18', 'C400X'],
-    KTM: ['1290 Super Duke R', '790 Duke', '390 Duke', '690 Enduro'],
-    Ducati: ['Panigale V4', 'Monster', 'Scrambler', 'Multistrada', 'Streetfighter'],
-    Triumph: ['Street Triple', 'Speed Triple', 'Tiger 900', 'Bonneville', 'Rocket 3'],
-    'Harley-Davidson': ['Street Glide', 'Sportster', 'Fat Boy', 'Softail', 'Pan America'],
-    'Другая марка': ['Другая модель'],
-};
+const app = {
+    modules: {},
+    config: {
+        modelsDatabase: {
+            "Honda": [
+                "CB125F", "CB300R", "CB500X", "CB650R", "CBR500R", "CBR650R", "CBR1000RR-R Fireblade", 
+                "CRF300L", "CRF450R", "Africa Twin", "Gold Wing", "Rebel 500", "Rebel 1100", "PCX160", 
+                "ADV160", "Forza 350", "CT125", "Monkey 125", "Super Cub C125", "NM4 Vultus", "VFR800F"
+            ],
+            "Yamaha": [
+                "MT-07", "MT-09", "MT-10", "MT-15", "MT-125", "YZF-R1", "YZF-R6", "YZF-R7", "YZF-R3", 
+                "YZF-R125", "XMAX", "TMAX", "Tracer 9", "Tracer 7", "XSR900", "XSR700", "XSR155", 
+                "Tenere 700", "WR155R", "NMAX", "YZ450F", "YZ250F"
+            ],
+            "Kawasaki": [
+                "Ninja ZX-10R", "Ninja ZX-6R", "Ninja 650", "Ninja 400", "Ninja 300", "Ninja 250", 
+                "Ninja 125", "Z900", "Z800", "Z650", "Z400", "Z300", "Z250", "Z125", "Versys 650", 
+                "Versys 300", "Vulcan S", "Vulcan 900", "W800", "KLX230", "KLX140", "KX450", "KX250"
+            ],
+            "Suzuki": [
+                "GSX-R1000", "GSX-R750", "GSX-R600", "GSX-R125", "GSX-S1000", "GSX-S750", "GSX-S125", 
+                "SV650", "V-Strom 650", "V-Strom 1050", "V-Strom 250", "Hayabusa", "Burgman 400", 
+                "Burgman 200", "RM-Z450", "RM-Z250"
+            ],
+            "BMW": [
+                "S1000RR", "S1000XR", "S1000R", "R1250GS", "R1250RT", "R1250R", "R1250RS", "F900R", 
+                "F900XR", "F750GS", "F850GS", "G310R", "G310GS", "C400X", "C400GT", "K1600GT", "K1600B"
+            ],
+            "KTM": [
+                "1290 Super Duke R", "1290 Super Adventure", "790 Duke", "790 Adventure", "390 Duke", 
+                "390 Adventure", "250 Duke", "125 Duke", "690 Enduro", "690 SMC", "450 EXC", "350 EXC", 
+                "250 EXC", "Freeride E-XC"
+            ],
+            "Ducati": [
+                "Panigale V4", "Panigale V2", "Streetfighter V4", "Monster", "Scrambler", "Multistrada", 
+                "Hypermotard", "Diavel", "XDiavel", "SuperSport", "DesertX"
+            ],
+            "Triumph": [
+                "Street Triple", "Speed Triple", "Tiger 900", "Tiger 1200", "Bonneville", "Scrambler", 
+                "Rocket 3", "Trident", "Daytona", "Thruxton", "Speed Twin"
+            ],
+            "Harley-Davidson": [
+                "Street Glide", "Road Glide", "Sportster", "Fat Boy", "Softail", "Pan America", 
+                "Low Rider", "Heritage Classic", "Breakout", "CVO", "LiveWire"
+            ],
+            "Другая марка": ["Другая модель"]
+        },
+        motorcycleClasses: {
+            "Спортивные (Sport)": {
+                description: "Для скорости и резкой езды по асфальту, агрессивная посадка.",
+                examples: ["Yamaha YZF-R1", "Honda CBR1000RR", "Kawasaki Ninja ZX-10R"]
+            },
+            "Голые (Naked)": {
+                description: "Мотоциклы без обтекателей, с прямой посадкой, для города и активной езды.",
+                examples: ["Yamaha MT-07", "Kawasaki Z900", "Triumph Street Triple"]
+            },
+            "Круизеры / Чопперы": {
+                description: "Низкая посадка, для неспешной езды по трассе, акцент на стиле.",
+                examples: ["Harley-Davidson Softail", "Indian Chief", "Yamaha V-Star"]
+            },
+            "Туристические (Touring)": {
+                description: "Максимальный комфорт для дальних поездок, с багажом и защитой.",
+                examples: ["Honda Gold Wing", "BMW K 1600 GTL", "Harley-Davidson Road Glide"]
+            },
+            "Спорт-туризм (Sport-Touring)": {
+                description: "Гибрид спортивного и туристического, для быстрых и дальних поездок.",
+                examples: ["Yamaha Tracer 9", "Kawasaki Ninja 1000SX", "BMW S1000XR"]
+            },
+            "Классика / Ретро (Classic)": {
+                description: "Внешний вид в стиле мотоциклов прошлых лет.",
+                examples: ["Royal Enfield Classic 350", "Triumph Bonneville", "Moto Guzzi V7"]
+            },
+            "Кафе-рейсеры (Cafe Racer)": {
+                description: "Ретро-стиль с спортивными элементами, низким рулем.",
+                examples: ["Triumph Thruxton", "Ducati Scrambler Cafe Racer", "Norton Commando"]
+            },
+            "Мотокросс (Motocross)": {
+                description: "Для гонок по грунтовым трассам, без фар и поворотников.",
+                examples: ["KTM 450 SX-F", "Honda CRF450R", "Yamaha YZ450F"]
+            },
+            "Эндуро (Enduro)": {
+                description: "Для езды по бездорожью, но с светотехникой для использования на дорогах.",
+                examples: ["KTM 500 EXC", "Husqvarna FE 501", "Beta 500 RR-S"]
+            },
+            "Трэйл (Trail)": {
+                description: "Легкие внедорожники для неагрессивного покорения природы.",
+                examples: ["Honda CRF250L", "Yamaha XT250", "Kawasaki KLX230"]
+            },
+            "Эдвенчер (Adventure)": {
+                description: "Универсальные мотоциклы для асфальта и бездорожья, часто с большим запасом хода.",
+                examples: ["BMW R1250GS", "KTM 1290 Super Adventure", "Ducati Multistrada"]
+            },
+            "Супермото (Supermoto)": {
+                description: "Внедорожный мотоцикл с дорожной резиной, для агрессивной езды по городу и картодрому.",
+                examples: ["KTM 690 SMC R", "Husqvarna 701 Supermoto", "Aprilia SXV 550"]
+            },
+            "Скутеры (Scooter)": {
+                description: "Автоматическая коробка передач, удобство для города.",
+                examples: ["Yamaha XMAX", "Honda PCX", "Vespa GTS"]
+            },
+            "Мопеды / Легкие мотоциклы": {
+                description: "Маленький объем двигателя, для неспешных поездок по городу.",
+                examples: ["Honda Super Cub", "Yamaha YBR125", "KTM 125 Duke"]
+            },
+            "Электрические мотоциклы": {
+                description: "Тихие и экологичные, с мгновенной тягой.",
+                examples: ["Zero SR/F", "Energica Ego", "Harley-Davidson LiveWire"]
+            }
+        },
+        gearboxTypes: {
+            "Механическая": "Водитель вручную с помощью рычага сцепления (на руле) и педали переключения передач (ножной рычаг). Подавляющее большинство мотоциклов.",
+            "Автоматическая (DCT / Вариатор)": "Водитель не управляет сцеплением (нет рычага сцепление). Переключение автоматическое или ручное по желанию. Honda DCT, скутеры с вариатором.",
+            "Полуавтоматическая": "У мотоцикла нет рычага сцепления на руле, но при этом есть педаль или кнопка, как на механической коробке. Старые мопеды, скутеры с педалями."
+        },
+        originCountries: {
+            "Дилерский ПТС РФ": {
+                description: "Мотоцикл был новым официально ввезен в Россию дилером (импортером) и продан первому владельцу. Первым и единственным документом на мотоцикл является российский ПТС (Паспорт Транспортного Средства), выданный таможенными органами РФ.",
+                examples: ["Полная история обслуживания у официального дилера", "Российская гарантия", "Первый владелец в ПТС"]
+            },
+            "Япония": {
+                description: "Мотоциклы для внутреннего японского рынка. Часто имеют ограничение максимальной скорости (~180 км/ч), спидометр только в км/ч, специфичную маркировку (надписи на японском). Могут быть 'экономичные' версии двигателей. Часто оснащены катафотами на вилках.",
+                examples: ["Спидометр только в км/ч", "Японские надписи на панели", "Катафоты на вилках", "Экономичные версии двигателей"]
+            },
+            "Европа": {
+                description: "Мотоциклы для европейского рынка. Спидометр в км/ч, часто дублируется в милях. Соответствуют строгим экологическим нормам Евро. Комплектации могут быть богаче, чем базовые для других рынков.",
+                examples: ["Спидометр в км/ч и милях", "Соответствие нормам Евро-4/5", "Богатые комплектации", "Немецкие/итальянские документы"]
+            },
+            "США / Аукцион": {
+                description: "Мотоциклы для североамериканского рынка. Главный отличительный признак — спидометр в милях (большие цифры - mph). Фары могут иметь другой режим работы (горят всегда). Могут быть отличия в настройках двигателя и составе выхлопа.",
+                examples: ["Спидометр в милях (mph)", "Фары горят постоянно", "Американские настройки двигателя", "Сертификат соответствия EPA"]
+            },
+            "Другое": {
+                description: "Другое происхождение мотоцикла, не подходящее под основные категории.",
+                examples: ["Канадский рынок", "Австралийский рынок", "Локальные рынки Азии"]
+            }
+        },
+        auctionTypes: {
+            "Без аукционного листа": {
+                description: "Покупка мотоцикла у частного перекупщика или небольшого дилера в стране-экспортере (чаще всего Япония) без предоставления официального отчета о состоянии.",
+                examples: ["Частный перекупщик в Японии", "Небольшой дилер", "Без официального отчета"]
+            },
+            "Аукцион Японии": {
+                description: "Мотоцикл имеет Аукционный лист — паспорт лота. При выборе данного пункта появляется возможность ввода номера аукционного листа или ссылки на лот.",
+                examples: ["USS Tokyo", "JU Nagoya", "ARAI", "CAA"]
+            },
+            "Аукцион США (битый)": {
+                description: "Мотоцикл имеет Аукционный лист — паспорт лота. При выборе данного пункта появляется возможность ввода номера аукционного листа или ссылки на лот.",
+                examples: ["Copart", "IAAI", "Manheim"]
+            },
+            "Европейский / дилер": {
+                description: "Покупка мотоцикла у официального дилера или крупного специализированного салона в Европе (например, в Германии, Польше, Чехии и Швейцарии), а также частных продаж.",
+                examples: ["Официальный дилер BMW", "Специализированный салон", "Частные продажи в Европе"]
+            },
+            "Частник по ДКП": {
+                description: "Прямая покупка у владельца мотоцикла с оформлением стандартного договора купли-продажи.",
+                examples: ["Договор купли-продажи", "Прямая сделка с владельцем", "Российский ПТС"]
+            }
+        }
+    },
+    state: {
+        reportsDatabase: [],
+        inspectionsDatabase: [],
+        deferredPrompt: null,
+        notificationTimeouts: []
+    },
+    init() {
+        try {
+            // Безопасная загрузка из localStorage
+            this.state.reportsDatabase = JSON.parse(localStorage.getItem('motodiag_reports') || '[]');
+            this.state.inspectionsDatabase = JSON.parse(localStorage.getItem('motodiag_inspections') || '[]');
+        } catch (e) {
+            console.warn('Ошибка загрузки данных из localStorage:', e);
+            this.state.reportsDatabase = [];
+            this.state.inspectionsDatabase = [];
+        }
 
-const MOTO_CLASSES = [
-    'Классический',
-    'Нейкед',
-    'Скрэмблер',
-    'Спортбайк',
-    'Туристический',
-    'Гипербайк',
-    'Турэндуро',
-    'Круизер',
-    'Мускулбайк',
-    'Боббер',
-    'Кафе-рейсер',
-    'Мотоцикл с коляской',
-    'Кастом',
-    'Чоппер',
-    'Мини-байк',
-    'Трайк',
-    'Макси-скутер',
-    'Кроссовый',
-    'Эндуро',
-    'Мотард',
-    'Супермото',
-    'Триалбайк',
-    'Питбайк',
-    'Мопед',
-    'Скутер',
-    'Скутеретта',
-];
-
-// Состояние приложения
-let state = {
-    theme: 'light',
-    activeTab: 'report',
-    form: createEmptyForm(),
-    reports: [],
-    inspections: [],
-    generatedReport: '',
-    savingsText: '',
-    toasts: [],
-    autoSave: true,
-    vibration: true,
-    inspectionNotifications: true,
-    reminderHours: 2,
-    showScrollTop: false,
-    searchReports: '',
-    searchInspections: '',
-};
-
-// Инициализация приложения
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-    setupEventListeners();
-    loadInitialData();
-    renderApp();
-});
-
-// Инициализация DOM элементов
-function initializeApp() {
-    // Заполняем выпадающие списки
-    populateBrandSelect();
-    populateMotoClassSelect();
-    
-    // Устанавливаем текущий год как максимальный для поля года
-    const yearInput = document.getElementById('year');
-    const currentYear = new Date().getFullYear();
-    yearInput.max = currentYear + 1;
-}
-
-// Настройка обработчиков событий
-function setupEventListeners() {
-    // Переключение темы
-    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-    document.getElementById('theme-toggle-settings').addEventListener('click', toggleTheme);
-    
-    // Навигация по вкладкам
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabId = this.getAttribute('data-tab');
-            setActiveTab(tabId);
+        // Инициализация всех модулей с обработкой ошибок
+        Object.entries(this.modules).forEach(([name, module]) => {
+            try {
+                if (module.init) module.init();
+            } catch (e) {
+                console.error(`Ошибка инициализации модуля ${name}:`, e);
+                this.showError('Ошибка загрузки модуля: ' + name);
+            }
         });
-    });
-    
-    // Обработчики формы отчета
-    document.getElementById('report-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        handleGenerateReport();
-    });
-    
-    document.getElementById('brand').addEventListener('change', handleBrandChange);
-    document.getElementById('model').addEventListener('change', handleModelChange);
-    document.getElementById('decision').addEventListener('change', handleDecisionChange);
-    
-    // Кнопки действий
-    document.getElementById('save-report').addEventListener('click', handleSaveReport);
-    document.getElementById('print-report').addEventListener('click', handlePrintClientReport);
-    document.getElementById('clear-form').addEventListener('click', handleClearForm);
-    document.getElementById('copy-report').addEventListener('click', handleCopyReport);
-    
-    // База отчетов
-    document.getElementById('search-reports').addEventListener('input', handleSearchReports);
-    document.getElementById('export-reports').addEventListener('click', handleExportReports);
-    document.getElementById('import-reports').addEventListener('click', handleImportReports);
-    
-    // Настройки
-    document.getElementById('auto-save-toggle').addEventListener('click', toggleAutoSave);
-    document.getElementById('export-settings').addEventListener('click', handleExportSettings);
-    document.getElementById('import-settings').addEventListener('click', handleImportSettings);
-    document.getElementById('clear-all-data').addEventListener('click', handleClearAllData);
-    
-    // Кнопка наверх
-    document.getElementById('scroll-top').addEventListener('click', scrollToTop);
-    
-    // Отслеживание прокрутки для кнопки наверх
-    window.addEventListener('scroll', handleScroll);
-    
-    // Автосохранение формы
-    setupFormAutoSave();
-}
 
-// Загрузка начальных данных
-function loadInitialData() {
-    loadFromLocalStorage();
-    updateProgressBar();
-}
-
-// Рендеринг приложения
-function renderApp() {
-    renderTheme();
-    renderTabs();
-    renderForm();
-    renderReportsList();
-    renderToasts();
-    renderScrollTopButton();
-}
-
-// Утилиты
-function createEmptyForm() {
-    return {
-        brand: '',
-        brandCustom: '',
-        model: '',
-        modelCustom: '',
-        year: '',
-        mileage: '',
-        vin: '',
-        licensePlate: '',
-        motoClass: '',
-        gearboxType: '',
-        engineVolume: '',
-        powerHp: '',
-        originCountry: '',
-        auctionType: '',
-        legalCheckedVia: '',
-        legalStatus: '',
-        legalComment: '',
-        price: '',
-        objectivePrice: '',
-        sellerDiscount: '',
-        investments: '',
-        profitabilityComment: '',
-        keyFinding: '',
-        expertVerdict: '',
-        decision: '',
-        inspectionDate: '',
-        inspectionTime: '',
-        inspectionAddress: '',
-        customerPhone: '',
-        sellerPhone: '',
-        inspectionNotes: '',
-    };
-}
-
-function parseMoney(value) {
-    if (!value) return 0;
-    const clean = value
-        .toString()
-        .replace(/\s/g, '')
-        .replace(/[^0-9,.-]/g, '')
-        .replace(',', '.');
-    const num = parseFloat(clean);
-    return Number.isNaN(num) ? 0 : num;
-}
-
-function formatMoney(amount) {
-    try {
-        return new Intl.NumberFormat('ru-RU', {
-            style: 'currency',
-            currency: 'RUB',
-            maximumFractionDigits: 0,
-        }).format(amount);
-    } catch {
-        return amount.toFixed(0) + ' ₽';
-    }
-}
-
-function starsFromRating(rating) {
-    const r = parseInt(rating || '0', 10);
-    if (!r || r < 1) return '';
-    const safe = Math.min(5, Math.max(1, r));
-    return '★'.repeat(safe) + '☆'.repeat(5 - safe);
-}
-
-function decisionLabel(d) {
-    if (d === 'buy') return '✅ Куплен';
-    if (d === 'not_buy') return '❌ Не куплен';
-    if (d === 'plan_inspection') return '📅 Запланировать проверку';
-    return '';
-}
-
-// Работа с DOM
-function populateBrandSelect() {
-    const brandSelect = document.getElementById('brand');
-    Object.keys(MODELS_BY_BRAND).forEach(brand => {
-        const option = document.createElement('option');
-        option.value = brand;
-        option.textContent = brand;
-        brandSelect.appendChild(option);
-    });
-}
-
-function populateMotoClassSelect() {
-    const classSelect = document.getElementById('moto-class');
-    MOTO_CLASSES.forEach(cls => {
-        const option = document.createElement('option');
-        option.value = cls;
-        option.textContent = cls;
-        classSelect.appendChild(option);
-    });
-}
-
-function setActiveTab(tabId) {
-    state.activeTab = tabId;
-    
-    // Обновляем навигацию
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    document.querySelector(`.nav-tab[data-tab="${tabId}"]`).classList.add('active');
-    
-    // Обновляем контент вкладок
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById(`tab-${tabId}`).classList.add('active');
-    
-    renderApp();
-}
-
-function renderTheme() {
-    const body = document.body;
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeToggleSettings = document.getElementById('theme-toggle-settings');
-    
-    if (state.theme === 'dark') {
-        body.classList.add('dark');
-        themeToggle.innerHTML = '☀️';
-        themeToggleSettings.classList.remove('bg-slate-300');
-        themeToggleSettings.classList.add('bg-indigo-600', 'justify-end');
-    } else {
-        body.classList.remove('dark');
-        themeToggle.innerHTML = '🌙';
-        themeToggleSettings.classList.remove('bg-indigo-600', 'justify-end');
-        themeToggleSettings.classList.add('bg-slate-300');
-    }
-}
-
-function renderTabs() {
-    // Уже обработано в setActiveTab
-}
-
-function renderForm() {
-    const form = state.form;
-    
-    // Заполняем основные поля
-    document.getElementById('brand').value = form.brand;
-    document.getElementById('brand-custom').value = form.brandCustom;
-    document.getElementById('model').value = form.model;
-    document.getElementById('model-custom').value = form.modelCustom;
-    document.getElementById('year').value = form.year;
-    document.getElementById('mileage').value = form.mileage;
-    document.getElementById('vin').value = form.vin;
-    document.getElementById('license-plate').value = form.licensePlate;
-    document.getElementById('moto-class').value = form.motoClass;
-    document.getElementById('gearbox-type').value = form.gearboxType;
-    document.getElementById('engine-volume').value = form.engineVolume;
-    document.getElementById('power-hp').value = form.powerHp;
-    document.getElementById('origin-country').value = form.originCountry;
-    document.getElementById('auction-type').value = form.auctionType;
-    document.getElementById('legal-checked-via').value = form.legalCheckedVia;
-    document.getElementById('legal-status').value = form.legalStatus;
-    document.getElementById('legal-comment').value = form.legalComment;
-    document.getElementById('price').value = form.price;
-    document.getElementById('objective-price').value = form.objectivePrice;
-    document.getElementById('seller-discount').value = form.sellerDiscount;
-    document.getElementById('investments').value = form.investments;
-    document.getElementById('profitability-comment').value = form.profitabilityComment;
-    document.getElementById('key-finding').value = form.keyFinding;
-    document.getElementById('expert-verdict').value = form.expertVerdict;
-    document.getElementById('decision').value = form.decision;
-    document.getElementById('inspection-date').value = form.inspectionDate;
-    document.getElementById('inspection-time').value = form.inspectionTime;
-    document.getElementById('inspection-address').value = form.inspectionAddress;
-    document.getElementById('customer-phone').value = form.customerPhone;
-    document.getElementById('seller-phone').value = form.sellerPhone;
-    document.getElementById('inspection-notes').value = form.inspectionNotes;
-    
-    // Обновляем видимость полей для пользовательских марки и модели
-    toggleBrandCustomVisibility();
-    toggleModelCustomVisibility();
-    
-    // Обновляем видимость блока планирования проверки
-    toggleInspectionPlanVisibility();
-    
-    // Обновляем сгенерированный отчет
-    if (state.generatedReport) {
-        document.getElementById('generated-report').textContent = state.generatedReport;
-        document.getElementById('generated-report-container').classList.remove('hidden');
-        document.getElementById('no-report-message').classList.add('hidden');
-    } else {
-        document.getElementById('generated-report-container').classList.add('hidden');
-        document.getElementById('no-report-message').classList.remove('hidden');
-    }
-    
-    // Обновляем текст экономии
-    if (state.savingsText) {
-        document.getElementById('savings-text').textContent = state.savingsText;
-        document.getElementById('savings-text').classList.remove('hidden');
-    } else {
-        document.getElementById('savings-text').classList.add('hidden');
-    }
-    
-    // Обновляем бейдж напоминания
-    document.getElementById('reminder-badge').textContent = `Напоминание за ${state.reminderHours} ч до проверки`;
-}
-
-function renderReportsList() {
-    const reportsList = document.getElementById('reports-list');
-    const searchTerm = state.searchReports.toLowerCase().trim();
-    
-    // Фильтруем отчеты по поисковому запросу
-    const filteredReports = state.reports.filter(report => {
-        if (!searchTerm) return true;
+        // Инициализация базовых компонентов
+        this.initBasicComponents();
         
-        return (
-            report.brand.toLowerCase().includes(searchTerm) ||
-            report.model.toLowerCase().includes(searchTerm) ||
-            (report.year || '').toLowerCase().includes(searchTerm) ||
-            (report.vin || '').toLowerCase().includes(searchTerm) ||
-            (report.licensePlate || '').toLowerCase().includes(searchTerm)
-        );
-    });
+        // Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                const CACHE_NAME = 'motodiag-v2.4.0';
+                const urlsToCache = ['/', '/index.html'];
+                self.addEventListener('install', event => {
+                    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+                });
+                self.addEventListener('fetch', event => {
+                    event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+                });
+            `)).catch(() => console.log('SW registration failed'));
+        }
+
+        const versionDateEl = document.getElementById('appVersionDate');
+        if (versionDateEl) versionDateEl.textContent = new Date().getFullYear();
+        
+        console.log('МотоДиагностика PRO инициализирована');
+    },
     
-    // Сортируем по дате создания (новые сверху)
-    filteredReports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    initBasicComponents() {
+        // Инициализация навигации
+        this.initNavigation();
+        
+        // Инициализация темы
+        this.initTheme();
+        
+        // Инициализация формы
+        this.initForm();
+        
+        // Инициализация кнопки "Наверх"
+        this.initScrollToTop();
+        
+        // Инициализация модального окна
+        this.initModal();
+        
+        // Инициализация подсказок
+        this.initTooltips();
+        
+        // Инициализация всплывающих подсказок для классов и коробок
+        this.initEnhancedTooltips();
+    },
     
-    if (filteredReports.length === 0) {
-        reportsList.innerHTML = '<p class="text-sm text-slate-500">Сохраненных отчетов пока нет.</p>';
-        return;
-    }
+    initNavigation() {
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                if (!tabId) return;
+                
+                navTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                tabContents.forEach(c => {
+                    c.classList.remove('active');
+                    if (c.id === `${tabId}-tab`) {
+                        c.classList.add('active');
+                    }
+                });
+                
+                // Обновление данных при переходе на вкладки
+                if (tabId === 'database') {
+                    app.loadReportsList();
+                }
+                if (tabId === 'inspections') {
+                    app.loadInspectionsList();
+                }
+                if (tabId === 'stats') {
+                    app.updateStatistics();
+                }
+            });
+        });
+    },
     
-    let html = '';
-    filteredReports.forEach(report => {
-        html += `
+    initTheme() {
+        const savedTheme = localStorage.getItem('motodiag_theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        
+        const darkThemeCheckbox = document.getElementById('darkTheme');
+        if (darkThemeCheckbox) {
+            darkThemeCheckbox.checked = savedTheme === 'dark';
+            darkThemeCheckbox.addEventListener('change', this.toggleTheme);
+        }
+        
+        const themeToggleHeader = document.getElementById('themeToggleHeader');
+        if (themeToggleHeader) {
+            themeToggleHeader.addEventListener('click', this.toggleThemeManual);
+        }
+    },
+    
+    toggleTheme() {
+        const isDark = document.getElementById('darkTheme').checked;
+        const theme = isDark ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('motodiag_theme', theme);
+    },
+    
+    toggleThemeManual() {
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        const newTheme = isDark ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', newTheme);
+        
+        const darkThemeEl = document.getElementById('darkTheme');
+        if (darkThemeEl) darkThemeEl.checked = !isDark;
+        
+        localStorage.setItem('motodiag_theme', newTheme);
+    },
+    
+    // Функции для конвертации пробега
+    convertKmToMiles(km) {
+        return (km * 0.621371).toFixed(1);
+    },
+
+    convertMilesToKm(miles) {
+        return (miles / 0.621371).toFixed(1);
+    },
+
+    // Обработчики для полей пробега
+    initMileageFields() {
+        const mileageKm = document.getElementById('mileage_km');
+        const mileageMiles = document.getElementById('mileage_miles');
+        
+        if (!mileageKm || !mileageMiles) return;
+        
+        // Обработчик для поля км
+        mileageKm.addEventListener('input', () => {
+            const kmValue = parseFloat(mileageKm.value);
+            if (!isNaN(kmValue) && kmValue >= 0) {
+                const milesValue = this.convertKmToMiles(kmValue);
+                mileageMiles.value = milesValue;
+            } else {
+                mileageMiles.value = '';
+            }
+            this.updateProgress();
+        });
+        
+        // Обработчик для поля миль
+        mileageMiles.addEventListener('input', () => {
+            const milesValue = parseFloat(mileageMiles.value);
+            if (!isNaN(milesValue) && milesValue >= 0) {
+                const kmValue = this.convertMilesToKm(milesValue);
+                mileageKm.value = kmValue;
+            } else {
+                mileageKm.value = '';
+            }
+            this.updateProgress();
+        });
+    },
+    
+    initForm() {
+        // Заполнение списка моделей при выборе марки
+        const brandSelect = document.getElementById('brand');
+        const modelSelect = document.getElementById('model');
+        
+        if (brandSelect && modelSelect) {
+            brandSelect.addEventListener('change', function() {
+                const brand = this.value;
+                const isCustomBrand = brand === 'Другая марка';
+                
+                // Показываем/скрываем поле для ввода кастомной марки
+                const brandCustom = document.getElementById('brand_custom');
+                if (brandCustom) {
+                    brandCustom.classList.toggle('hidden', !isCustomBrand);
+                    if (!isCustomBrand) brandCustom.value = '';
+                }
+                
+                // Обновляем список моделей
+                modelSelect.innerHTML = '<option value="">-- Выберите модель --</option>';
+                
+                if (brand && app.config.modelsDatabase[brand]) {
+                    app.config.modelsDatabase[brand].forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        modelSelect.appendChild(option);
+                    });
+                }
+                
+                // Добавляем опцию для кастомной модели
+                const customOption = document.createElement('option');
+                customOption.value = 'Другая модель';
+                customOption.textContent = 'Другая модель';
+                modelSelect.appendChild(customOption);
+                
+                app.updateProgress();
+            });
+            
+            modelSelect.addEventListener('change', function() {
+                const isCustomModel = this.value === 'Другая модель';
+                const modelCustom = document.getElementById('model_custom');
+                if (modelCustom) {
+                    modelCustom.classList.toggle('hidden', !isCustomModel);
+                    if (!isCustomModel) modelCustom.value = '';
+                }
+                app.updateProgress();
+            });
+        }
+        
+        // Инициализация полей пробега
+        this.initMileageFields();
+        
+        // Обработчик для решения (показ/скрытие полей проверки)
+        const decisionSelect = document.getElementById('decision');
+        const inspectionFields = document.getElementById('inspectionFields');
+        
+        if (decisionSelect && inspectionFields) {
+            decisionSelect.addEventListener('change', function() {
+                const showInspectionFields = this.value === '📅 Запланировать проверку';
+                inspectionFields.classList.toggle('hidden', !showInspectionFields);
+                
+                if (showInspectionFields) {
+                    // Устанавливаем дату по умолчанию (завтра)
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const dateInput = document.getElementById('inspection_date');
+                    if (dateInput) {
+                        dateInput.value = tomorrow.toISOString().split('T')[0];
+                    }
+                    
+                    // Устанавливаем время по умолчанию
+                    const timeInput = document.getElementById('inspection_time');
+                    if (timeInput) {
+                        timeInput.value = '10:00';
+                    }
+                }
+            });
+        }
+        
+        // Обработчики для кнопок формы
+        const generateBtn = document.getElementById('generateBtn');
+        const saveToDbBtn = document.getElementById('saveToDbBtn');
+        const clearFormBtn = document.getElementById('clearFormBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        
+        if (generateBtn) generateBtn.addEventListener('click', () => this.generateReport());
+        if (saveToDbBtn) saveToDbBtn.addEventListener('click', () => this.saveReportToDatabase());
+        if (clearFormBtn) clearFormBtn.addEventListener('click', () => this.clearForm());
+        if (copyBtn) copyBtn.addEventListener('click', () => this.copyToClipboard());
+        
+        // Автосохранение формы
+        this.setupAutoSave();
+        
+        // Загрузка сохраненных данных формы
+        this.loadFormData();
+        
+        // Обновление прогресса
+        this.updateProgress();
+    },
+    
+    initScrollToTop() {
+        const btn = document.getElementById('scrollToTopBtn');
+        if (!btn) return;
+        
+        window.addEventListener('scroll', () => {
+            btn.classList.toggle('visible', window.pageYOffset > 300);
+        });
+        
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    },
+    
+    initModal() {
+        const modal = document.getElementById('reportModal');
+        const modalClose = document.getElementById('modalClose');
+        const closeModalBtn = document.getElementById('closeModal');
+        const copyModalReportBtn = document.getElementById('copyModalReport');
+        
+        if (modalClose) {
+            modalClose.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        if (copyModalReportBtn) {
+            copyModalReportBtn.addEventListener('click', () => {
+                this.copyModalReport();
+            });
+        }
+        
+        // Закрытие модалки по клику вне контента
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+    },
+    
+    initTooltips() {
+        let activeTooltip = null;
+        
+        function showTooltip(element, text) {
+            // Удаляем существующую подсказку
+            if (activeTooltip) {
+                activeTooltip.remove();
+                activeTooltip = null;
+            }
+            
+            // Создаем новую подсказку
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = text;
+            
+            // Позиционируем подсказку
+            const rect = element.getBoundingClientRect();
+            tooltip.style.position = 'fixed';
+            tooltip.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            tooltip.style.left = (rect.left + window.scrollX) + 'px';
+            tooltip.style.zIndex = '10000';
+            
+            document.body.appendChild(tooltip);
+            activeTooltip = tooltip;
+            
+            // Автоматическое скрытие через 5 секунд
+            setTimeout(() => {
+                if (activeTooltip === tooltip) {
+                    tooltip.remove();
+                    activeTooltip = null;
+                }
+            }, 5000);
+        }
+        
+        function hideTooltip() {
+            if (activeTooltip) {
+                activeTooltip.remove();
+                activeTooltip = null;
+            }
+        }
+        
+        // Добавляем обработчики для элементов с подсказками
+        const elementsWithTooltips = document.querySelectorAll('[data-tooltip]');
+        elementsWithTooltips.forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                showTooltip(this, this.getAttribute('data-tooltip'));
+            });
+            element.addEventListener('mouseleave', hideTooltip);
+            element.addEventListener('focus', function() {
+                showTooltip(this, this.getAttribute('data-tooltip'));
+            });
+            element.addEventListener('blur', hideTooltip);
+        });
+    },
+    
+    // Инициализация всплывающих подсказок для классов мотоциклов и типов коробки
+    initEnhancedTooltips() {
+        // Обработчики для селекта класса мотоцикла
+        const motorcycleClassSelect = document.getElementById('motorcycle_class');
+        if (motorcycleClassSelect) {
+            motorcycleClassSelect.addEventListener('change', () => {
+                this.showEnhancedTooltip('class', motorcycleClassSelect.value);
+            });
+        }
+        
+        // Обработчики для селекта типа коробки
+        const gearboxTypeSelect = document.getElementById('gearbox_type');
+        if (gearboxTypeSelect) {
+            gearboxTypeSelect.addEventListener('change', () => {
+                this.showEnhancedTooltip('gearbox', gearboxTypeSelect.value);
+            });
+        }
+        
+        // Обработчики для селекта происхождения мотоцикла
+        const originCountrySelect = document.getElementById('origin_country');
+        if (originCountrySelect) {
+            originCountrySelect.addEventListener('change', () => {
+                this.showEnhancedTooltip('origin', originCountrySelect.value);
+            });
+        }
+        
+        // Обработчики для селекта аукциона/поставки
+        const auctionTypeSelect = document.getElementById('auction_type');
+        if (auctionTypeSelect) {
+            auctionTypeSelect.addEventListener('change', () => {
+                this.showEnhancedTooltip('auction', auctionTypeSelect.value);
+                this.toggleAuctionLotField(auctionTypeSelect.value);
+            });
+        }
+    },
+    
+    // Показать расширенную всплывающую подсказку
+    showEnhancedTooltip(type, value) {
+        if (!value) return;
+        
+        let title = '';
+        let description = '';
+        let examples = '';
+        
+        if (type === 'class' && this.config.motorcycleClasses[value]) {
+            const classInfo = this.config.motorcycleClasses[value];
+            title = value;
+            description = classInfo.description;
+            examples = classInfo.examples.join(', ');
+        } else if (type === 'gearbox' && this.config.gearboxTypes[value]) {
+            title = value;
+            description = this.config.gearboxTypes[value];
+        } else if (type === 'origin' && this.config.originCountries[value]) {
+            const originInfo = this.config.originCountries[value];
+            title = value;
+            description = originInfo.description;
+            examples = originInfo.examples.join(', ');
+        } else if (type === 'auction' && this.config.auctionTypes[value]) {
+            const auctionInfo = this.config.auctionTypes[value];
+            title = value;
+            description = auctionInfo.description;
+            examples = auctionInfo.examples.join(', ');
+        } else {
+            return;
+        }
+        
+        this.showEnhancedToast(title, description, examples);
+    },
+    
+    // Показать расширенное toast-уведомление
+    showEnhancedToast(title, description, examples = '') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-info toast-enhanced';
+        toast.setAttribute('role', 'status');
+        
+        let toastContent = `
+            <div class="toast-title">${this.escapeHtml(title)}</div>
+            <div class="toast-description">${this.escapeHtml(description)}</div>
+        `;
+        
+        if (examples) {
+            toastContent += `
+                <div class="toast-examples">
+                    <strong>Примеры:</strong> ${this.escapeHtml(examples)}
+                </div>
+            `;
+        }
+        
+        toast.innerHTML = toastContent;
+        
+        container.appendChild(toast);
+        
+        // Аудио/вибро по настройкам
+        const vibrationEl = document.getElementById('vibration');
+        const soundEl = document.getElementById('soundNotifications');
+        
+        if (vibrationEl && vibrationEl.checked && navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+        
+        requestAnimationFrame(() => toast.classList.add('show'));
+        
+        // Автоматическое скрытие через 7-8 секунд в зависимости от длины текста
+        const textLength = title.length + description.length + examples.length;
+        const duration = textLength > 200 ? 8000 : 7000;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        }, duration);
+    },
+    
+    // Показать/скрыть поле номера аукционного лота
+    toggleAuctionLotField(auctionType) {
+        const auctionLotGroup = document.getElementById('auctionLotNumberGroup');
+        if (!auctionLotGroup) return;
+        
+        // Показываем поле только для аукционов Японии и США
+        const showLotField = auctionType === 'Аукцион Японии' || auctionType === 'Аукцион США (битый)';
+        auctionLotGroup.classList.toggle('hidden', !showLotField);
+    },
+    
+    updateProgress() {
+        const brandEl = document.getElementById('brand');
+        const modelEl = document.getElementById('model');
+        const yearEl = document.getElementById('year');
+        const mileageKm = document.getElementById('mileage_km');
+        const mileageMiles = document.getElementById('mileage_miles');
+        
+        if (!brandEl || !modelEl || !yearEl) return;
+        
+        let brandFilled = !!brandEl.value;
+        let modelFilled = !!modelEl.value;
+        let mileageFilled = !!(mileageKm && mileageKm.value) || !!(mileageMiles && mileageMiles.value);
+        
+        if (brandEl.value === 'Другая марка') {
+            const brandCustom = document.getElementById('brand_custom');
+            brandFilled = brandCustom && brandCustom.value.trim() !== '';
+        }
+        
+        if (modelEl.value === 'Другая модель') {
+            const modelCustom = document.getElementById('model_custom');
+            modelFilled = modelCustom && modelCustom.value.trim() !== '';
+        }
+        
+        const filled = (brandFilled ? 1 : 0) + (modelFilled ? 1 : 0) + (yearEl.value ? 1 : 0) + (mileageFilled ? 1 : 0);
+        const progress = (filled / 4) * 100;
+        
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        
+        if (progressFill) progressFill.style.width = `${progress}%`;
+        if (progressText) {
+            if (progress === 100) {
+                progressText.textContent = '✅ Все основные данные заполнены!';
+                progressText.style.color = 'var(--success-color)';
+            } else {
+                progressText.textContent = `Заполнено ${filled} из 4 основных полей`;
+                progressText.style.color = 'var(--text-light)';
+            }
+        }
+    },
+    
+    setupAutoSave() {
+        const form = document.getElementById('diagnosticForm');
+        if (!form) return;
+        
+        const autoSaveHandler = () => {
+            this.saveFormData();
+            this.updateProgress();
+            this.showSaveIndicator();
+        };
+        
+        // Используем debounce для оптимизации
+        const debouncedHandler = this.debounce(autoSaveHandler, 500);
+        
+        // Обработчики для всех элементов формы
+        const formElements = form.querySelectorAll('input, select, textarea');
+        formElements.forEach(element => {
+            element.addEventListener('input', debouncedHandler);
+            element.addEventListener('change', debouncedHandler);
+        });
+    },
+    
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
+    
+    saveFormData() {
+        try {
+            const form = document.getElementById('diagnosticForm');
+            if (!form) return;
+            
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            localStorage.setItem('motodiag_form_data', JSON.stringify(data));
+        } catch (e) {
+            console.warn('Ошибка сохранения формы:', e);
+        }
+    },
+    
+    loadFormData() {
+        try {
+            const savedData = localStorage.getItem('motodiag_form_data');
+            if (!savedData) return;
+            
+            const data = JSON.parse(savedData);
+            Object.keys(data).forEach(key => {
+                const el = document.getElementById(key);
+                if (el) el.value = data[key];
+            });
+            
+            // Обновляем список моделей если выбрана марка
+            const brandEl = document.getElementById('brand');
+            if (brandEl && data.brand) {
+                brandEl.dispatchEvent(new Event('change'));
+                
+                // Устанавливаем выбранную модель после обновления списка
+                setTimeout(() => {
+                    const modelEl = document.getElementById('model');
+                    if (modelEl && data.model) {
+                        modelEl.value = data.model;
+                        modelEl.dispatchEvent(new Event('change'));
+                    }
+                }, 0);
+            }
+            
+            // Показываем/скрываем дополнительные поля
+            const brandCustom = document.getElementById('brand_custom');
+            const modelCustom = document.getElementById('model_custom');
+            const inspectionFields = document.getElementById('inspectionFields');
+            const auctionLotGroup = document.getElementById('auctionLotNumberGroup');
+            
+            if (brandCustom) brandCustom.classList.toggle('hidden', data.brand !== 'Другая марка');
+            if (modelCustom) modelCustom.classList.toggle('hidden', data.model !== 'Другая модель');
+            if (inspectionFields) inspectionFields.classList.toggle('hidden', data.decision !== '📅 Запланировать проверку');
+            if (auctionLotGroup && data.auction_type) {
+                this.toggleAuctionLotField(data.auction_type);
+            }
+            
+        } catch (e) {
+            console.warn('Ошибка загрузки формы:', e);
+        }
+    },
+    
+    showSaveIndicator() {
+        const indicator = document.getElementById('saveIndicator');
+        if (indicator) {
+            indicator.classList.add('visible');
+            setTimeout(() => indicator.classList.remove('visible'), 2000);
+        }
+    },
+    
+    validateForm() {
+        let isValid = true;
+        let errorMessage = '';
+        let firstErrorElement = null; // Добавляем переменную для первого ошибочного поля
+        
+        const brandEl = document.getElementById('brand');
+        const modelEl = document.getElementById('model');
+        const yearEl = document.getElementById('year');
+        
+        if (!brandEl || !modelEl || !yearEl) return false;
+        
+        // Проверка обязательных полей
+        if (!brandEl.value) {
+            isValid = false;
+            brandEl.style.borderColor = 'var(--danger-color)';
+            errorMessage = 'Выберите марку мотоцикла';
+            if (!firstErrorElement) firstErrorElement = brandEl; // Запоминаем первое ошибочное поле
+        } else {
+            brandEl.style.borderColor = '';
+        }
+        
+        if (!modelEl.value) {
+            isValid = false;
+            modelEl.style.borderColor = 'var(--danger-color)';
+            errorMessage = 'Выберите модель мотоцикла';
+            if (!firstErrorElement) firstErrorElement = modelEl;
+        } else {
+            modelEl.style.borderColor = '';
+        }
+        
+        if (!yearEl.value) {
+            isValid = false;
+            yearEl.style.borderColor = 'var(--danger-color)';
+            errorMessage = 'Укажите год выпуска';
+            if (!firstErrorElement) firstErrorElement = yearEl;
+        } else {
+            yearEl.style.borderColor = '';
+        }
+        
+        // Проверка кастомных полей
+        if (brandEl.value === 'Другая марка') {
+            const brandCustom = document.getElementById('brand_custom');
+            if (brandCustom && !brandCustom.value.trim()) {
+                isValid = false;
+                brandCustom.style.borderColor = 'var(--danger-color)';
+                errorMessage = 'Укажите марку в поле "Введите марку"';
+                if (!firstErrorElement) firstErrorElement = brandCustom;
+            } else if (brandCustom) {
+                brandCustom.style.borderColor = '';
+            }
+        }
+        
+        if (modelEl.value === 'Другая модель') {
+            const modelCustom = document.getElementById('model_custom');
+            if (modelCustom && !modelCustom.value.trim()) {
+                isValid = false;
+                modelCustom.style.borderColor = 'var(--danger-color)';
+                errorMessage = 'Укажите модель в поле "Введите модель"';
+                if (!firstErrorElement) firstErrorElement = modelCustom;
+            } else if (modelCustom) {
+                modelCustom.style.borderColor = '';
+            }
+        }
+        
+        // Проверка года
+        const year = parseInt(yearEl.value, 10);
+        if (yearEl.value && (isNaN(year) || year < 1990 || year > 2030)) {
+            isValid = false;
+            yearEl.style.borderColor = 'var(--danger-color)';
+            errorMessage = 'Год выпуска должен быть между 1990 и 2030';
+            if (!firstErrorElement) firstErrorElement = yearEl;
+        }
+        
+        // Проверка полей для запланированной проверки
+        const decision = document.getElementById('decision')?.value;
+        if (decision === '📅 Запланировать проверку') {
+            const requiredFields = ['inspection_date', 'inspection_time', 'inspection_address', 'customer_phone'];
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && !field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = 'var(--danger-color)';
+                    errorMessage = 'Для запланированной проверки заполните все обязательные поля';
+                    if (!firstErrorElement) firstErrorElement = field;
+                } else if (field) {
+                    field.style.borderColor = '';
+                }
+            });
+        }
+        
+        if (!isValid) {
+            this.showToast(errorMessage || 'Пожалуйста, заполните все обязательные поля', 'warning');
+            
+            // Анимация тряски для кнопки генерации
+            const generateBtn = document.getElementById('generateBtn');
+            if (generateBtn) {
+                generateBtn.classList.add('shake');
+                setTimeout(() => generateBtn.classList.remove('shake'), 500);
+            }
+            
+            // Прокрутка к первому полю с ошибкой
+            if (firstErrorElement) {
+                setTimeout(() => {
+                    firstErrorElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Добавляем дополнительную анимацию для привлечения внимания
+                    firstErrorElement.classList.add('pulse');
+                    setTimeout(() => firstErrorElement.classList.remove('pulse'), 1500);
+                    
+                    // Фокусируемся на поле для удобства ввода
+                    if (firstErrorElement.tagName === 'INPUT' || firstErrorElement.tagName === 'SELECT') {
+                        firstErrorElement.focus();
+                    }
+                }, 300);
+            }
+        }
+        
+        return isValid;
+    },
+    
+    generateReport() {
+        if (!this.validateForm()) return;
+        
+        try {
+            const form = document.getElementById('diagnosticForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            const report = this.generateReportText(data);
+            
+            const output = document.getElementById('output');
+            const outputCard = document.getElementById('outputCard');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            if (output) output.textContent = report;
+            if (outputCard) outputCard.classList.remove('hidden');
+            if (copyBtn) copyBtn.classList.remove('hidden');
+            
+            this.calculateAndShowSavings(data);
+            
+            if (outputCard) outputCard.scrollIntoView({ behavior: 'smooth' });
+            this.showToast('Отчет успешно сгенерирован!', 'success');
+        } catch (e) {
+            console.error('Ошибка генерации отчета:', e);
+            this.showToast('Ошибка при создании отчета', 'warning');
+        }
+    },
+    
+    generateReportText(data) {
+        const brand = data.brand === 'Другая марка' ? data.brand_custom : data.brand;
+        const model = data.model === 'Другая модель' ? data.model_custom : data.model;
+        
+        let report = `🏍️ Мотоподбор, осмотр мотоцикла перед покупкой, выездная диагностика, подбор под ключ.\n`;
+        report += `📞 Сергей Ландик 8 950 005-05-08\n`;
+        report += `🌐 Сайт: motopodbor.ru\n\n`;
+        
+        report += `🏍️ ${brand} ${model}\n`;
+        if (data.year) report += `📅 Год выпуска: ${data.year}\n`;
+        
+        // Отображение пробега в обеих единицах
+        if (data.mileage_km) {
+            const km = parseFloat(data.mileage_km);
+            if (!isNaN(km)) {
+                const miles = this.convertKmToMiles(km);
+                report += `🛣️ Пробег: ${km} тыс. км (${miles} тыс. миль)\n`;
+            }
+        } else if (data.mileage_miles) {
+            const miles = parseFloat(data.mileage_miles);
+            if (!isNaN(miles)) {
+                const km = this.convertMilesToKm(miles);
+                report += `🛣️ Пробег: ${miles} тыс. миль (${km} тыс. км)\n`;
+            }
+        }
+        
+        // Добавляем информацию о происхождении и аукционе
+        if (data.origin_country) report += `🌍 Происхождение: ${data.origin_country}\n`;
+        if (data.auction_type) report += `🏷️ Аукцион/поставка: ${data.auction_type}\n`;
+        if (data.auction_lot_number) report += `📋 Номер лота/ссылка: ${data.auction_lot_number}\n`;
+        
+        if (data.motorcycle_class) report += `🏷️ Класс: ${data.motorcycle_class}\n`;
+        
+        // Добавляем юридическую информацию
+        if (data.legal_check) report += `📋 Юридическая проверка: ${data.legal_check}\n`;
+        if (data.legal_status) report += `⚖️ Статус: ${data.legal_status}\n`;
+        if (data.legal_comment) report += `📝 Комментарий: ${data.legal_comment}\n`;
+        
+        report += `\n💼 ВЫВОДЫ:\n`;
+        if (data.key_finding) report += `🔑 Ключевая находка: ${data.key_finding}\n`;
+        if (data.expert_verdict) report += `👨‍💼 Вердикт эксперта: ${data.expert_verdict}\n`;
+        
+        if (data.decision) {
+            report += `🤔 Решение: ${data.decision}\n`;
+            if (data.decision === '📅 Запланировать проверку') {
+                if (data.inspection_date && data.inspection_time) {
+                    const inspectionDate = new Date(data.inspection_date + 'T' + data.inspection_time);
+                    report += `📅 Запланированная проверка: ${inspectionDate.toLocaleString('ru-RU')}\n`;
+                }
+                if (data.inspection_address) report += `📍 Адрес: ${data.inspection_address}\n`;
+            }
+        }
+        
+        if (data.price || data.objective_cost || data.seller_discount || data.investment_cost) {
+            report += `\n💰 ФИНАНСОВАЯ ИНФОРМАЦИЯ:\n`;
+            if (data.price) report += `💵 Цена продавца: ${data.price}\n`;
+            if (data.objective_cost) report += `📊 Объективная стоимость: ${data.objective_cost}\n`;
+            if (data.seller_discount) report += `🎁 Скидка с продавца: ${data.seller_discount}\n`;
+            if (data.investment_cost) report += `🔧 Стоимость вложений: ${data.investment_cost}\n`;
+        }
+        
+        report += `\n────────────────────────────\n`;
+        report += `📞 Готовы найти свой идеальный мотоцикл?\n`;
+        report += `Звоните: 8 950 005-05-08\n`;
+        report += `Мы поможем сделать правильный выбор! ✅`;
+        
+        return report;
+    },
+    
+    calculateAndShowSavings(data) {
+        const price = this.parseMoneyValue(data.price);
+        const objectiveCost = this.parseMoneyValue(data.objective_cost);
+        const sellerDiscount = this.parseMoneyValue(data.seller_discount);
+        const investmentCost = this.parseMoneyValue(data.investment_cost);
+        const savingsAlert = document.getElementById('savingsAlert');
+        
+        if (price && objectiveCost && savingsAlert) {
+            const savings = (objectiveCost - (price - sellerDiscount)) - investmentCost;
+            if (savings > 0) {
+                savingsAlert.textContent = `💵 Общая экономия для клиента: ${this.formatMoney(savings)}`;
+                savingsAlert.classList.remove('hidden');
+            } else {
+                savingsAlert.classList.add('hidden');
+            }
+        } else if (savingsAlert) {
+            savingsAlert.classList.add('hidden');
+        }
+    },
+    
+    parseMoneyValue(value) {
+        if (!value) return 0;
+        const clean = value.toString().replace(/\s/g, '').replace(',', '.');
+        return parseFloat(clean) || 0;
+    },
+    
+    formatMoney(amount) {
+        return new Intl.NumberFormat('ru-RU', { 
+            style: 'currency', 
+            currency: 'RUB', 
+            minimumFractionDigits: 0 
+        }).format(amount);
+    },
+    
+    saveReportToDatabase() {
+        if (!this.validateForm()) return;
+        
+        try {
+            const form = document.getElementById('diagnosticForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            const brand = data.brand === 'Другая марка' ? data.brand_custom : data.brand;
+            const model = data.model === 'Другая модель' ? data.model_custom : data.model;
+            
+            const report = {
+                id: Date.now().toString(),
+                timestamp: new Date().toISOString(),
+                ...data,
+                brand,
+                model,
+                generated_text: document.getElementById('output')?.textContent || ''
+            };
+            
+            this.state.reportsDatabase.push(report);
+            localStorage.setItem('motodiag_reports', JSON.stringify(this.state.reportsDatabase));
+            
+            this.showToast('Отчет успешно сохранен в базу данных!', 'success');
+            this.loadReportsList();
+            this.updateStatistics();
+        } catch (e) {
+            console.error('Ошибка сохранения отчета:', e);
+            this.showToast('Ошибка при сохранении отчета', 'warning');
+        }
+    },
+    
+    clearForm() {
+        if (!confirm('Вы уверены, что хотите очистить все поля формы?')) return;
+        
+        const form = document.getElementById('diagnosticForm');
+        if (form) form.reset();
+        
+        localStorage.removeItem('motodiag_form_data');
+        
+        const outputCard = document.getElementById('outputCard');
+        const savingsAlert = document.getElementById('savingsAlert');
+        const inspectionFields = document.getElementById('inspectionFields');
+        const brandCustom = document.getElementById('brand_custom');
+        const modelCustom = document.getElementById('model_custom');
+        const auctionLotGroup = document.getElementById('auctionLotNumberGroup');
+        
+        if (outputCard) outputCard.classList.add('hidden');
+        if (savingsAlert) savingsAlert.classList.add('hidden');
+        if (inspectionFields) inspectionFields.classList.add('hidden');
+        if (brandCustom) brandCustom.classList.add('hidden');
+        if (modelCustom) modelCustom.classList.add('hidden');
+        if (auctionLotGroup) auctionLotGroup.classList.add('hidden');
+        
+        // Сбрасываем список моделей
+        const brandSelect = document.getElementById('brand');
+        if (brandSelect) {
+            brandSelect.value = '';
+            brandSelect.dispatchEvent(new Event('change'));
+        }
+        
+        this.updateProgress();
+        this.showToast('Форма очищена', 'success');
+    },
+    
+    copyToClipboard() {
+        try {
+            const text = document.getElementById('output')?.textContent || '';
+            if (!text) {
+                this.showToast('Нет текста для копирования', 'warning');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            }).catch(() => {
+                // Fallback для старых браузеров
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            });
+        } catch (e) {
+            console.error('Ошибка копирования:', e);
+            this.showToast('Ошибка при копировании', 'warning');
+        }
+    },
+    
+    copyModalReport() {
+        try {
+            const text = document.getElementById('modalOutput')?.textContent || '';
+            if (!text) {
+                this.showToast('Нет текста для копирования', 'warning');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            });
+        } catch (e) {
+            console.error('Ошибка копирования:', e);
+            this.showToast('Ошибка при копировании', 'warning');
+        }
+    },
+    
+    showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.setAttribute('role', 'status');
+        toast.textContent = message;
+        
+        container.appendChild(toast);
+        
+        // Аудио/вибро по настройкам
+        const vibrationEl = document.getElementById('vibration');
+        const soundEl = document.getElementById('soundNotifications');
+        
+        if (vibrationEl && vibrationEl.checked && navigator.vibrate) {
+            navigator.vibrate(80);
+        }
+        
+        requestAnimationFrame(() => toast.classList.add('show'));
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    },
+    
+    showError(message) {
+        this.showToast(message, 'warning');
+    },
+    
+    escapeHtml(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    },
+    
+    // Методы для работы с базой данных
+    loadReportsList() {
+        const reportsList = document.getElementById('reportsList');
+        if (!reportsList) return;
+        
+        const searchValue = (document.getElementById('searchReports')?.value || '').toLowerCase();
+        
+        if (this.state.reportsDatabase.length === 0) {
+            reportsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Нет сохраненных отчетов</div>';
+            return;
+        }
+        
+        const filtered = this.state.reportsDatabase.filter(report => {
+            if (!searchValue) return true;
+            
+            return (
+                report.brand?.toLowerCase().includes(searchValue) ||
+                report.model?.toLowerCase().includes(searchValue) ||
+                (report.year && String(report.year).includes(searchValue)) ||
+                report.vin?.toLowerCase().includes(searchValue) ||
+                report.engine_number?.toLowerCase().includes(searchValue) ||
+                report.license_plate?.toLowerCase().includes(searchValue)
+            );
+        }).reverse();
+        
+        if (filtered.length === 0) {
+            reportsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Отчеты не найдены</div>';
+            return;
+        }
+        
+        reportsList.innerHTML = filtered.map(report => `
             <div class="report-item">
-                <div class="report-item-container">
-                    <div>
-                        <div class="report-item-header">
-                            ${report.brand} ${report.model} (${report.year || 'год не указан'})
-                        </div>
-                        <div class="report-item-details">
-                            <span>Пробег: ${report.mileage || 'не указан'} тыс. км</span>
-                            <span>Цена: ${report.price || 'не указана'}</span>
-                            <span>VIN: ${report.vin || 'не указан'}</span>
-                            <span>Номер: ${report.licensePlate || 'не указан'}</span>
-                            <span>Класс: ${report.motoClass || 'не указан'}</span>
-                            <span>Решение: ${decisionLabel(report.decision) || 'не указано'}</span>
-                        </div>
-                    </div>
-                    <div class="report-item-actions">
-                        <button class="action-btn indigo" data-id="${report.id}" data-action="load">
-                            ✏️ В форму
-                        </button>
-                        <button class="action-btn emerald" data-id="${report.id}" data-action="copy">
-                            📋 Скопировать текст
-                        </button>
-                        <button class="action-btn rose" data-id="${report.id}" data-action="delete">
-                            🗑️ Удалить
-                        </button>
+                <div class="report-header">
+                    <div class="report-title">${this.escapeHtml(report.brand)} ${this.escapeHtml(report.model)} (${this.escapeHtml(report.year)})</div>
+                    <div class="report-actions">
+                        <button class="action-btn" style="background: var(--secondary-color); color: white;" onclick="app.viewReport('${report.id}')" aria-label="Просмотреть отчет">👁️</button>
+                        <button class="action-btn" style="background: var(--warning-color); color: white;" onclick="app.editReport('${report.id}')" aria-label="Редактировать отчет">✏️</button>
+                        <button class="action-btn" style="background: var(--danger-color); color: white;" onclick="app.deleteReport('${report.id}')" aria-label="Удалить отчет">🗑️</button>
                     </div>
                 </div>
+                <div class="report-meta">
+                    <div>Пробег: ${this.escapeHtml(report.mileage_km || report.mileage_miles || '0')} ${report.mileage_km ? 'тыс.км' : report.mileage_miles ? 'тыс.миль' : ''}</div>
+                    <div>Цена: ${this.escapeHtml(report.price || 'Не указана')}</div>
+                    <div>${report.vin ? `VIN: ${this.escapeHtml(report.vin)}` : 'VIN: Не указан'}</div>
+                    <div>${report.engine_number ? `Двигатель: ${this.escapeHtml(report.engine_number)}` : 'Двигатель: Не указан'}</div>
+                    <div>${report.license_plate ? `Номер: ${this.escapeHtml(report.license_plate)}` : 'Номер: Не указан'}</div>
+                    <div>Класс: ${this.escapeHtml(report.motorcycle_class || 'Не указан')}</div>
+                    <div>Решение: ${this.escapeHtml(report.decision || 'Не указано')}</div>
+                </div>
             </div>
-        `;
-    });
+        `).join('');
+    },
     
-    reportsList.innerHTML = html;
+    viewReport(reportId) {
+        const report = this.state.reportsDatabase.find(r => r.id === reportId);
+        if (!report) return;
+        
+        const modalVin = document.getElementById('modalVin');
+        const modalEngineNumber = document.getElementById('modalEngineNumber');
+        const modalLicensePlate = document.getElementById('modalLicensePlate');
+        const modalBikeInfo = document.getElementById('modalBikeInfo');
+        const modalOutput = document.getElementById('modalOutput');
+        const reportModal = document.getElementById('reportModal');
+        
+        if (modalVin) modalVin.textContent = report.vin ? this.escapeHtml(report.vin) : 'Не указан';
+        if (modalEngineNumber) modalEngineNumber.textContent = report.engine_number ? this.escapeHtml(report.engine_number) : 'Не указан';
+        if (modalLicensePlate) modalLicensePlate.textContent = report.license_plate ? this.escapeHtml(report.license_plate) : 'Не указан';
+        if (modalBikeInfo) modalBikeInfo.textContent = `${this.escapeHtml(report.brand)} ${this.escapeHtml(report.model)} (${this.escapeHtml(report.year)})`;
+        if (modalOutput) modalOutput.textContent = report.generated_text || '';
+        if (reportModal) reportModal.classList.remove('hidden');
+    },
     
-    // Добавляем обработчики событий для кнопок
-    reportsList.querySelectorAll('.action-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const reportId = this.getAttribute('data-id');
-            const action = this.getAttribute('data-action');
+    editReport(reportId) {
+        const report = this.state.reportsDatabase.find(r => r.id === reportId);
+        if (!report) return;
+        
+        // Заполняем форму данными отчета
+        Object.keys(report).forEach(key => {
+            const el = document.getElementById(key);
+            if (el && report[key] !== undefined && report[key] !== null) {
+                el.value = report[key];
+            }
+        });
+        
+        // Обновляем список моделей
+        const brandSelect = document.getElementById('brand');
+        if (brandSelect && report.brand) {
+            brandSelect.value = report.brand;
+            brandSelect.dispatchEvent(new Event('change'));
             
-            switch (action) {
-                case 'load':
-                    handleLoadReportToForm(reportId);
-                    break;
-                case 'copy':
-                    handleCopyReportFromDb(reportId);
-                    break;
-                case 'delete':
-                    handleDeleteReport(reportId);
-                    break;
-            }
-        });
-    });
-}
-
-function renderToasts() {
-    const toastsContainer = document.getElementById('toasts');
-    toastsContainer.innerHTML = '';
-    
-    state.toasts.forEach(toast => {
-        const toastEl = document.createElement('div');
-        toastEl.className = `pointer-events-auto flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-lg ${getToastBgClass(toast.type)}`;
-        toastEl.textContent = toast.message;
-        toastsContainer.appendChild(toastEl);
-    });
-}
-
-function renderScrollTopButton() {
-    const scrollTopBtn = document.getElementById('scroll-top');
-    if (state.showScrollTop) {
-        scrollTopBtn.classList.add('visible');
-    } else {
-        scrollTopBtn.classList.remove('visible');
-    }
-}
-
-// Вспомогательные функции для рендеринга
-function toggleBrandCustomVisibility() {
-    const brandCustomContainer = document.getElementById('brand-custom-container');
-    if (state.form.brand === 'Другая марка') {
-        brandCustomContainer.classList.remove('hidden');
-    } else {
-        brandCustomContainer.classList.add('hidden');
-    }
-}
-
-function toggleModelCustomVisibility() {
-    const modelCustomContainer = document.getElementById('model-custom-container');
-    if (state.form.model === 'Другая модель') {
-        modelCustomContainer.classList.remove('hidden');
-    } else {
-        modelCustomContainer.classList.add('hidden');
-    }
-}
-
-function toggleInspectionPlanVisibility() {
-    const inspectionPlanContainer = document.getElementById('inspection-plan-container');
-    if (state.form.decision === 'plan_inspection') {
-        inspectionPlanContainer.classList.remove('hidden');
-    } else {
-        inspectionPlanContainer.classList.add('hidden');
-    }
-}
-
-function getToastBgClass(type) {
-    switch (type) {
-        case 'success': return 'bg-emerald-600';
-        case 'warning': return 'bg-amber-500';
-        case 'error': return 'bg-rose-600';
-        default: return 'bg-slate-700';
-    }
-}
-
-// Обработчики событий
-function toggleTheme() {
-    state.theme = state.theme === 'light' ? 'dark' : 'light';
-    saveToLocalStorage();
-    renderApp();
-}
-
-function handleBrandChange() {
-    const brand = document.getElementById('brand').value;
-    state.form.brand = brand;
-    state.form.brandCustom = '';
-    
-    // Обновляем список моделей
-    const modelSelect = document.getElementById('model');
-    modelSelect.innerHTML = '<option value="">Выберите модель</option><option value="Другая модель">Другая модель</option>';
-    
-    if (brand && MODELS_BY_BRAND[brand]) {
-        MODELS_BY_BRAND[brand].forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            modelSelect.appendChild(option);
-        });
-    }
-    
-    // Сбрасываем модель, если она не соответствует выбранной марке
-    if (state.form.model && !MODELS_BY_BRAND[brand]?.includes(state.form.model) && state.form.model !== 'Другая модель') {
-        state.form.model = '';
-    }
-    
-    updateProgressBar();
-    saveFormToLocalStorage();
-    renderForm();
-}
-
-function handleModelChange() {
-    state.form.model = document.getElementById('model').value;
-    state.form.modelCustom = '';
-    updateProgressBar();
-    saveFormToLocalStorage();
-    renderForm();
-}
-
-function handleDecisionChange() {
-    state.form.decision = document.getElementById('decision').value;
-    saveFormToLocalStorage();
-    renderForm();
-}
-
-function handleGenerateReport() {
-    if (!validateForm()) return;
-    
-    const text = buildReportText(state.form);
-    state.generatedReport = text;
-    
-    const savings = computeSavings(state.form);
-    state.savingsText = savings.text;
-    
-    showToast('Отчет успешно сгенерирован', 'success');
-    renderForm();
-}
-
-function handleSaveReport() {
-    if (!validateForm()) return;
-    
-    const text = state.generatedReport || buildReportText(state.form);
-    const brand = state.form.brand === 'Другая марка' ? state.form.brandCustom || 'Марка не указана' : state.form.brand;
-    const model = state.form.model === 'Другая модель' ? state.form.modelCustom || 'Модель не указана' : state.form.model;
-    
-    const newReport = {
-        id: String(Date.now()),
-        createdAt: new Date().toISOString(),
-        brand,
-        model,
-        year: state.form.year,
-        mileage: state.form.mileage,
-        vin: state.form.vin,
-        licensePlate: state.form.licensePlate,
-        motoClass: state.form.motoClass,
-        decision: state.form.decision,
-        price: state.form.price,
-        objectivePrice: state.form.objectivePrice,
-        sellerDiscount: state.form.sellerDiscount,
-        investments: state.form.investments,
-        generatedText: text,
-    };
-    
-    state.reports.push(newReport);
-    
-    if (state.form.decision === 'plan_inspection' && 
-        state.form.inspectionDate && 
-        state.form.inspectionTime && 
-        state.form.inspectionAddress && 
-        state.form.customerPhone) {
-        
-        const newInspection = {
-            id: String(Date.now()),
-            createdAt: new Date().toISOString(),
-            brand,
-            model,
-            year: state.form.year,
-            date: state.form.inspectionDate,
-            time: state.form.inspectionTime,
-            address: state.form.inspectionAddress,
-            customerPhone: state.form.customerPhone,
-            sellerPhone: state.form.sellerPhone,
-            notes: state.form.inspectionNotes,
-            status: 'planned',
-        };
-        
-        state.inspections.push(newInspection);
-        showToast('Отчет сохранен и проверка запланирована', 'success');
-    } else {
-        showToast('Отчет сохранен в базу', 'success');
-    }
-    
-    saveToLocalStorage();
-    renderApp();
-}
-
-function handlePrintClientReport() {
-    if (!validateForm()) return;
-    
-    const text = buildReportText(state.form);
-    const brand = state.form.brand === 'Другая марка' ? state.form.brandCustom || 'Марка не указана' : state.form.brand;
-    const model = state.form.model === 'Другая модель' ? state.form.modelCustom || 'Модель не указана' : state.form.model;
-    const title = `Отчет по мотоциклу ${brand} ${model}`;
-    
-    const html = `<!DOCTYPE html><html lang='ru'><head><meta charSet='utf-8'/><title>${title}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px;line-height:1.5;}h1{font-size:20px;margin-bottom:16px;}pre{white-space:pre-wrap;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;border:1px solid #CBD5F5;padding:16px;border-radius:12px;background:#F9FAFB;}</style></head><body><h1>${title}</h1><pre>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre></body></html>`;
-    
-    const win = window.open('', '_blank');
-    if (!win) {
-        showToast('Разрешите всплывающие окна для печати PDF', 'warning');
-        return;
-    }
-    
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    win.print();
-}
-
-function handleClearForm() {
-    if (!confirm('Очистить все поля формы и начать заново')) return;
-    
-    state.form = createEmptyForm();
-    state.generatedReport = '';
-    state.savingsText = '';
-    
-    localStorage.removeItem(STORAGE_KEYS.form);
-    showToast('Форма очищена', 'success');
-    renderForm();
-}
-
-function handleCopyReport() {
-    if (!state.generatedReport) {
-        showToast('Сначала сгенерируйте отчет', 'warning');
-        return;
-    }
-    
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(state.generatedReport).then(
-            () => showToast('Отчет скопирован в буфер обмена', 'success'),
-            () => showToast('Не удалось скопировать отчет', 'error')
-        );
-    } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = state.generatedReport;
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            showToast('Отчет скопирован в буфер обмена', 'success');
-        } catch {
-            showToast('Не удалось скопировать отчет', 'error');
+            // Устанавливаем модель после обновления списка
+            setTimeout(() => {
+                const modelSelect = document.getElementById('model');
+                if (modelSelect && report.model) {
+                    modelSelect.value = report.model;
+                    modelSelect.dispatchEvent(new Event('change'));
+                }
+            }, 0);
         }
-        document.body.removeChild(textarea);
-    }
-}
-
-function handleSearchReports() {
-    state.searchReports = document.getElementById('search-reports').value;
-    renderReportsList();
-}
-
-function handleLoadReportToForm(reportId) {
-    const report = state.reports.find(r => r.id === reportId);
-    if (!report) return;
-    
-    state.form = createEmptyForm();
-    state.form.brand = report.brand;
-    state.form.model = report.model;
-    state.form.year = report.year;
-    state.form.mileage = report.mileage;
-    state.form.vin = report.vin;
-    state.form.licensePlate = report.licensePlate;
-    state.form.motoClass = report.motoClass;
-    state.form.price = report.price;
-    state.form.objectivePrice = report.objectivePrice;
-    state.form.sellerDiscount = report.sellerDiscount;
-    state.form.investments = report.investments;
-    state.form.decision = report.decision;
-    
-    state.generatedReport = report.generatedText;
-    
-    const savings = computeSavings(state.form);
-    state.savingsText = savings.text;
-    
-    setActiveTab('report');
-    showToast('Данные отчета загружены в форму', 'info');
-    renderForm();
-}
-
-function handleCopyReportFromDb(reportId) {
-    const report = state.reports.find(r => r.id === reportId);
-    if (!report || !report.generatedText) {
-        showToast('У этого отчета нет сохраненного текста', 'warning');
-        return;
-    }
-    
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(report.generatedText).then(
-            () => showToast('Текст отчета скопирован', 'success'),
-            () => showToast('Не удалось скопировать текст', 'error')
-        );
-    }
-}
-
-function handleDeleteReport(reportId) {
-    if (!confirm('Удалить этот отчет без возможности восстановления')) return;
-    
-    state.reports = state.reports.filter(r => r.id !== reportId);
-    saveToLocalStorage();
-    renderReportsList();
-    showToast('Отчет удален', 'success');
-}
-
-function handleExportReports() {
-    try {
-        const blob = new Blob([JSON.stringify(state.reports, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `motodiag_reports_${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('База отчетов экспортирована', 'success');
-    } catch {
-        showToast('Не удалось экспортировать базу отчетов', 'error');
-    }
-}
-
-function handleImportReports() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.onchange = () => {
-        const file = input.files && input.files[0];
-        if (!file) return;
         
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const data = JSON.parse(String(reader.result));
-                if (!Array.isArray(data)) throw new Error('bad');
-                
-                if (!confirm(`Импортировать ${data.length} отчетов и добавить к текущей базе`)) return;
-                
-                state.reports = [...state.reports, ...data];
-                saveToLocalStorage();
-                renderReportsList();
-                showToast('Отчеты импортированы', 'success');
-            } catch {
-                showToast('Файл не похож на базу отчетов', 'error');
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-function toggleAutoSave() {
-    state.autoSave = !state.autoSave;
-    const toggleBtn = document.getElementById('auto-save-toggle');
-    
-    if (state.autoSave) {
-        toggleBtn.classList.remove('bg-slate-300');
-        toggleBtn.classList.add('bg-emerald-500', 'justify-end');
-    } else {
-        toggleBtn.classList.remove('bg-emerald-500', 'justify-end');
-        toggleBtn.classList.add('bg-slate-300');
-    }
-    
-    saveToLocalStorage();
-    showToast(`Автосохранение ${state.autoSave ? 'включено' : 'отключено'}`, 'info');
-}
-
-function handleExportSettings() {
-    try {
-        const settings = {
-            theme: state.theme,
-            autoSave: state.autoSave,
-            vibration: state.vibration,
-            inspectionNotifications: state.inspectionNotifications,
-            reminderHours: state.reminderHours,
-            form: state.form,
-        };
+        // Показываем/скрываем дополнительные поля
+        const brandCustom = document.getElementById('brand_custom');
+        const modelCustom = document.getElementById('model_custom');
+        const inspectionFields = document.getElementById('inspectionFields');
+        const auctionLotGroup = document.getElementById('auctionLotNumberGroup');
         
-        const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `motodiag_settings_${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Настройки экспортированы', 'success');
-    } catch {
-        showToast('Не удалось экспортировать настройки', 'error');
-    }
-}
-
-function handleImportSettings() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.onchange = () => {
-        const file = input.files && input.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const data = JSON.parse(String(reader.result));
-                
-                if (!confirm('Заменить текущие настройки импортированными')) return;
-                
-                if (data.theme) state.theme = data.theme;
-                if (typeof data.autoSave === 'boolean') state.autoSave = data.autoSave;
-                if (typeof data.vibration === 'boolean') state.vibration = data.vibration;
-                if (typeof data.inspectionNotifications === 'boolean') state.inspectionNotifications = data.inspectionNotifications;
-                if (typeof data.reminderHours === 'number') state.reminderHours = data.reminderHours;
-                if (data.form) state.form = { ...createEmptyForm(), ...data.form };
-                
-                saveToLocalStorage();
-                renderApp();
-                showToast('Настройки импортированы', 'success');
-            } catch {
-                showToast('Файл не похож на настройки', 'error');
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-function handleClearAllData() {
-    if (!confirm('Удалить все отчеты, проверки и настройки')) return;
-    
-    state.reports = [];
-    state.inspections = [];
-    state.form = createEmptyForm();
-    state.generatedReport = '';
-    state.savingsText = '';
-    
-    localStorage.removeItem(STORAGE_KEYS.reports);
-    localStorage.removeItem(STORAGE_KEYS.inspections);
-    localStorage.removeItem(STORAGE_KEYS.form);
-    localStorage.removeItem(STORAGE_KEYS.settings);
-    
-    showToast('Все данные приложения очищены', 'success');
-    renderApp();
-}
-
-function handleScroll() {
-    state.showScrollTop = window.scrollY > 300;
-    renderScrollTopButton();
-}
-
-function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Валидация и бизнес-логика
-function validateForm() {
-    if (!state.form.brand) {
-        showToast('Выберите марку мотоцикла', 'warning');
-        return false;
-    }
-    
-    if (state.form.brand === 'Другая марка' && !state.form.brandCustom.trim()) {
-        showToast('Укажите марку в поле другая марка', 'warning');
-        return false;
-    }
-    
-    if (!state.form.model) {
-        showToast('Выберите модель мотоцикла', 'warning');
-        return false;
-    }
-    
-    if (state.form.model === 'Другая модель' && !state.form.modelCustom.trim()) {
-        showToast('Укажите модель в поле другая модель', 'warning');
-        return false;
-    }
-    
-    if (!state.form.year) {
-        showToast('Укажите год выпуска', 'warning');
-        return false;
-    }
-    
-    const yearNum = parseInt(state.form.year, 10);
-    const maxYear = new Date().getFullYear() + 1;
-    if (Number.isFinite(yearNum) && (yearNum < 1990 || yearNum > maxYear)) {
-        showToast(`Год выпуска должен быть между 1990 и ${maxYear}`, 'warning');
-        return false;
-    }
-    
-    if (state.form.decision === 'plan_inspection') {
-        if (!state.form.inspectionDate || !state.form.inspectionTime || !state.form.inspectionAddress.trim() || !state.form.customerPhone.trim()) {
-            showToast('Для запланированной проверки заполните дату, время, адрес и телефон заказчика', 'warning');
-            return false;
+        if (brandCustom) brandCustom.classList.toggle('hidden', report.brand !== 'Другая марка');
+        if (modelCustom) modelCustom.classList.toggle('hidden', report.model !== 'Другая модель');
+        if (inspectionFields) inspectionFields.classList.toggle('hidden', report.decision !== '📅 Запланировать проверку');
+        if (auctionLotGroup && report.auction_type) {
+            this.toggleAuctionLotField(report.auction_type);
         }
-    }
+        
+        this.updateProgress();
+        
+        // Переключаемся на вкладку отчета
+        const reportTab = document.querySelector('.nav-tab[data-tab="report"]');
+        if (reportTab) reportTab.click();
+        
+        this.showToast(`Редактирование отчета: ${report.brand} ${report.model}`, 'info');
+    },
     
-    return true;
-}
-
-function computeSavings(form) {
-    const price = parseMoney(form.price);
-    const objective = parseMoney(form.objectivePrice);
-    const discount = parseMoney(form.sellerDiscount);
-    const invest = parseMoney(form.investments);
+    deleteReport(reportId) {
+        if (!confirm('Вы уверены, что хотите удалить этот отчет?')) return;
+        
+        this.state.reportsDatabase = this.state.reportsDatabase.filter(r => r.id !== reportId);
+        localStorage.setItem('motodiag_reports', JSON.stringify(this.state.reportsDatabase));
+        
+        this.loadReportsList();
+        this.updateStatistics();
+        this.showToast('Отчет успешно удален', 'success');
+    },
     
-    if (!price || !objective) return { text: '', value: 0 };
-    
-    const savings = objective - (price - discount) - invest;
-    if (savings <= 0) return { text: '', value: savings };
-    
-    return {
-        text: `💵 Общая потенциальная экономия для клиента: ${formatMoney(Math.round(savings))}`,
-        value: savings,
-    };
-}
-
-function buildReportText(form) {
-    const brand = form.brand === 'Другая марка' ? form.brandCustom || 'Марка не указана' : form.brand;
-    const model = form.model === 'Другая модель' ? form.modelCustom || 'Модель не указана' : form.model;
-
-    let text = '';
-    text += '🏍️ Мотодиагностика и подбор мотоциклов в Санкт-Петербурге\n';
-    text += '👨‍🔧 Эксперт: Ланк Сергей\n';
-    text += '🌐 Сайт: motopodbor.ru\n';
-    text += '📞 Телефон: 8 950 005-05-08\n\n';
-
-    text += '🔹 Исходные данные\n';
-    text += `Мотоцикл: ${brand} ${model}\n`;
-    if (form.year) text += `Год выпуска: ${form.year}\n`;
-    if (form.mileage) text += `Пробег: ${form.mileage} тыс. км\n`;
-    if (form.motoClass) text += `Класс: ${form.motoClass}\n`;
-    if (form.engineVolume) text += `Объем двигателя: ${form.engineVolume} куб.см\n`;
-    if (form.powerHp) text += `Мощность: ${form.powerHp} л.с.\n`;
-    if (form.gearboxType) text += `Тип коробки: ${form.gearboxType}\n`;
-    if (form.originCountry) text += `Происхождение: ${form.originCountry}\n`;
-    if (form.auctionType) text += `Аукцион / поставка: ${form.auctionType}\n`;
-    if (form.vin) text += `VIN / номер рамы: ${form.vin}\n`;
-    if (form.licensePlate) text += `Гос. номер: ${form.licensePlate}\n`;
-    text += '\n';
-
-    text += '🔎 Документы и юридическая чистота\n';
-    if (form.legalCheckedVia) text += `Источник проверки: ${form.legalCheckedVia}\n`;
-    if (form.legalStatus) text += `Статус: ${form.legalStatus}\n`;
-    if (form.legalComment) text += `Комментарий: ${form.legalComment}\n`;
-    text += '\n';
-
-    text += '💰 Финансовый блок\n';
-    if (form.price) text += `Цена продавца: ${form.price}\n`;
-    if (form.objectivePrice) text += `Объективная стоимость: ${form.objectivePrice}\n`;
-    if (form.sellerDiscount) text += `Ожидаемая скидка: ${form.sellerDiscount}\n`;
-    if (form.investments) text += `Оценка необходимых вложений: ${form.investments}\n`;
-    const { text: savings } = computeSavings(form);
-    if (savings) text += `${savings}\n`;
-    if (form.profitabilityComment) text += `Комментарий по рентабельности: ${form.profitabilityComment}\n`;
-    text += '\n';
-
-    text += '💡 Итоги диагностики\n';
-    if (form.keyFinding) text += `Ключевая находка: ${form.keyFinding}\n`;
-    if (form.expertVerdict) text += `Вердикт эксперта: ${form.expertVerdict}\n`;
-    if (form.decision) text += `Решение: ${decisionLabel(form.decision)}\n`;
-    if (form.decision === 'plan_inspection' && form.inspectionDate && form.inspectionTime) {
-        text += `Запланированная проверка: ${form.inspectionDate} ${form.inspectionTime}\n`;
-        if (form.inspectionAddress) text += `Адрес проверки: ${form.inspectionAddress}\n`;
-        if (form.customerPhone) text += `Телефон заказчика: ${form.customerPhone}\n`;
-        if (form.sellerPhone) text += `Телефон продавца: ${form.sellerPhone}\n`;
-        if (form.inspectionNotes) text += `Заметки по проверке: ${form.inspectionNotes}\n`;
-    }
-    text += '\n';
-
-    text += '────────────────────────────\n';
-    text += 'Готов помочь подобрать и проверить мотоцикл в Санкт-Петербурге и области.\n';
-    text += 'Связь: 8 950 005-05-08 (Ланк Сергей)\n';
-    text += 'Сайт для заявок: motopodbor.ru\n';
-
-    return text;
-}
-
-function updateProgressBar() {
-    const brandFilled = state.form.brand && (state.form.brand !== 'Другая марка' || !!state.form.brandCustom.trim());
-    const modelFilled = state.form.model && (state.form.model !== 'Другая модель' || !!state.form.modelCustom.trim());
-    const yearFilled = !!state.form.year;
-    const count = [brandFilled, modelFilled, yearFilled].filter(Boolean).length;
-    const progress = (count / 3) * 100;
-    
-    document.getElementById('basic-progress').textContent = `${Math.round(progress)}%`;
-    document.getElementById('progress-bar').style.width = `${progress}%`;
-}
-
-// Система уведомлений
-function showToast(message, type = 'info') {
-    const id = Date.now() + Math.random();
-    state.toasts.push({ id, type, message });
-    
-    if (state.vibration && 'navigator' in window && window.navigator.vibrate) {
-        window.navigator.vibrate(80);
-    }
-    
-    renderToasts();
-    
-    setTimeout(() => {
-        state.toasts = state.toasts.filter(t => t.id !== id);
-        renderToasts();
-    }, 4000);
-}
-
-// Автосохранение формы
-function setupFormAutoSave() {
-    const formElements = document.querySelectorAll('#report-form input, #report-form select, #report-form textarea');
-    
-    formElements.forEach(element => {
-        element.addEventListener('input', function() {
-            updateFormFromDOM();
-            updateProgressBar();
+    // Методы для работы со статистикой
+    updateStatistics(period = 'week') {
+        const now = new Date();
+        let startDate = new Date(now - 7 * 24 * 60 * 60 * 1000); // неделя по умолчанию
+        
+        if (period === 'month') startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        if (period === 'quarter') {
+            const q = Math.floor(now.getMonth() / 3);
+            startDate = new Date(now.getFullYear(), q * 3, 1);
+        }
+        if (period === 'year') startDate = new Date(now.getFullYear(), 0, 1);
+        
+        const periodReports = this.state.reportsDatabase.filter(r => new Date(r.timestamp) >= startDate);
+        const totalReports = periodReports.length;
+        const purchased = periodReports.filter(r => r.decision === '✅ Куплен').length;
+        
+        let totalSavings = 0;
+        periodReports.forEach(r => {
+            const price = this.parseMoneyValue(r.price);
+            const objectiveCost = this.parseMoneyValue(r.objective_cost);
+            const sellerDiscount = this.parseMoneyValue(r.seller_discount);
+            const investmentCost = this.parseMoneyValue(r.investment_cost);
             
-            if (state.autoSave) {
-                saveFormToLocalStorage();
+            if (price && objectiveCost) {
+                const savings = (objectiveCost - (price - sellerDiscount)) - investmentCost;
+                if (savings > 0) totalSavings += savings;
             }
         });
         
-        element.addEventListener('change', function() {
-            updateFormFromDOM();
-            updateProgressBar();
-            
-            if (state.autoSave) {
-                saveFormToLocalStorage();
-            }
-        });
-    });
-}
-
-function updateFormFromDOM() {
-    state.form.brand = document.getElementById('brand').value;
-    state.form.brandCustom = document.getElementById('brand-custom').value;
-    state.form.model = document.getElementById('model').value;
-    state.form.modelCustom = document.getElementById('model-custom').value;
-    state.form.year = document.getElementById('year').value;
-    state.form.mileage = document.getElementById('mileage').value;
-    state.form.vin = document.getElementById('vin').value;
-    state.form.licensePlate = document.getElementById('license-plate').value;
-    state.form.motoClass = document.getElementById('moto-class').value;
-    state.form.gearboxType = document.getElementById('gearbox-type').value;
-    state.form.engineVolume = document.getElementById('engine-volume').value;
-    state.form.powerHp = document.getElementById('power-hp').value;
-    state.form.originCountry = document.getElementById('origin-country').value;
-    state.form.auctionType = document.getElementById('auction-type').value;
-    state.form.legalCheckedVia = document.getElementById('legal-checked-via').value;
-    state.form.legalStatus = document.getElementById('legal-status').value;
-    state.form.legalComment = document.getElementById('legal-comment').value;
-    state.form.price = document.getElementById('price').value;
-    state.form.objectivePrice = document.getElementById('objective-price').value;
-    state.form.sellerDiscount = document.getElementById('seller-discount').value;
-    state.form.investments = document.getElementById('investments').value;
-    state.form.profitabilityComment = document.getElementById('profitability-comment').value;
-    state.form.keyFinding = document.getElementById('key-finding').value;
-    state.form.expertVerdict = document.getElementById('expert-verdict').value;
-    state.form.decision = document.getElementById('decision').value;
-    state.form.inspectionDate = document.getElementById('inspection-date').value;
-    state.form.inspectionTime = document.getElementById('inspection-time').value;
-    state.form.inspectionAddress = document.getElementById('inspection-address').value;
-    state.form.customerPhone = document.getElementById('customer-phone').value;
-    state.form.sellerPhone = document.getElementById('seller-phone').value;
-    state.form.inspectionNotes = document.getElementById('inspection-notes').value;
-}
-
-// Работа с localStorage
-function saveToLocalStorage() {
-    try {
-        localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(state.reports));
-        localStorage.setItem(STORAGE_KEYS.inspections, JSON.stringify(state.inspections));
-        localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({
-            theme: state.theme,
-            autoSave: state.autoSave,
-            vibration: state.vibration,
-            inspectionNotifications: state.inspectionNotifications,
-            reminderHours: state.reminderHours,
-        }));
+        const avgSavings = purchased > 0 ? totalSavings / purchased : 0;
         
-        if (state.autoSave) {
-            saveFormToLocalStorage();
+        const brandCounts = {};
+        periodReports.forEach(r => {
+            if (r.brand) brandCounts[r.brand] = (brandCounts[r.brand] || 0) + 1;
+        });
+        
+        const brandKeys = Object.keys(brandCounts);
+        const popularBrand = brandKeys.length > 0 ? 
+            brandKeys.reduce((a, b) => brandCounts[a] > brandCounts[b] ? a : b) : 
+            'Нет данных';
+        
+        const plannedInspections = this.state.inspectionsDatabase.filter(i => i.status === 'planned').length;
+        const completedInspections = this.state.inspectionsDatabase.filter(i => i.status === 'completed').length;
+        
+        const totalReportsEl = document.getElementById('totalReports');
+        const successfulDealsEl = document.getElementById('successfulDeals');
+        const avgSavingsEl = document.getElementById('avgSavings');
+        const popularBrandEl = document.getElementById('popularBrand');
+        const plannedInspectionsEl = document.getElementById('plannedInspections');
+        const completedInspectionsEl = document.getElementById('completedInspections');
+        
+        if (totalReportsEl) totalReportsEl.textContent = totalReports;
+        if (successfulDealsEl) successfulDealsEl.textContent = purchased;
+        if (avgSavingsEl) avgSavingsEl.textContent = this.formatMoney(Math.round(avgSavings));
+        if (popularBrandEl) popularBrandEl.textContent = popularBrand;
+        if (plannedInspectionsEl) plannedInspectionsEl.textContent = plannedInspections;
+        if (completedInspectionsEl) completedInspectionsEl.textContent = completedInspections;
+    },
+    
+    // Дополнительные методы для проверок (упрощенная версия)
+    loadInspectionsList() {
+        const inspectionsList = document.getElementById('inspectionsList');
+        if (!inspectionsList) return;
+        
+        if (this.state.inspectionsDatabase.length === 0) {
+            inspectionsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Нет запланированных проверок</div>';
+            return;
         }
-    } catch (error) {
-        console.error('Ошибка сохранения в localStorage:', error);
+        
+        // Простая реализация для демонстрации
+        inspectionsList.innerHTML = this.state.inspectionsDatabase.map(inspection => `
+            <div class="inspection-item">
+                <div class="inspection-header">
+                    <div class="inspection-title">${this.escapeHtml(inspection.brand)} ${this.escapeHtml(inspection.model)}</div>
+                    <div class="inspection-date">${inspection.date || 'Дата не указана'}</div>
+                </div>
+                <div class="inspection-details">
+                    <div><strong>Адрес:</strong> ${this.escapeHtml(inspection.address || 'Не указан')}</div>
+                    <div><strong>Телефон:</strong> ${this.escapeHtml(inspection.phone || 'Не указан')}</div>
+                </div>
+            </div>
+        `).join('');
     }
-}
+};
 
-function saveFormToLocalStorage() {
+// Инициализация приложения после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
     try {
-        localStorage.setItem(STORAGE_KEYS.form, JSON.stringify(state.form));
-    } catch (error) {
-        console.error('Ошибка сохранения формы в localStorage:', error);
-    }
-}
-
-function loadFromLocalStorage() {
-    try {
-        const rawReports = localStorage.getItem(STORAGE_KEYS.reports);
-        if (rawReports) {
-            state.reports = JSON.parse(rawReports);
+        app.init();
+        
+        // Инициализация поиска
+        const searchReports = document.getElementById('searchReports');
+        if (searchReports) {
+            searchReports.addEventListener('input', () => app.loadReportsList());
         }
-    } catch (error) {
-        console.error('Ошибка загрузки отчетов из localStorage:', error);
-    }
-    
-    try {
-        const rawInspections = localStorage.getItem(STORAGE_KEYS.inspections);
-        if (rawInspections) {
-            state.inspections = JSON.parse(rawInspections);
+        
+        const searchInspections = document.getElementById('searchInspections');
+        if (searchInspections) {
+            searchInspections.addEventListener('input', () => app.loadInspectionsList());
         }
-    } catch (error) {
-        console.error('Ошибка загрузки проверок из localStorage:', error);
-    }
-    
-    try {
-        const rawForm = localStorage.getItem(STORAGE_KEYS.form);
-        if (rawForm) {
-            state.form = { ...createEmptyForm(), ...JSON.parse(rawForm) };
+        
+        // Инициализация кнопок статистики
+        document.querySelectorAll('.grid-btn[data-period]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.grid-btn[data-period]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                app.updateStatistics(this.getAttribute('data-period'));
+            });
+        });
+        
+        // Инициализация кнопки генерации статистики
+        const generateStatsBtn = document.getElementById('generateStatsBtn');
+        if (generateStatsBtn) {
+            generateStatsBtn.addEventListener('click', () => {
+                // Простая реализация для демонстрации
+                const statsOutput = document.getElementById('statsOutput');
+                const copyStatsBtn = document.getElementById('copyStatsBtn');
+                
+                if (statsOutput) {
+                    statsOutput.textContent = 'Функция генерации поста статистики в разработке';
+                    statsOutput.classList.remove('hidden');
+                }
+                
+                if (copyStatsBtn) {
+                    copyStatsBtn.classList.remove('hidden');
+                }
+            });
         }
-    } catch (error) {
-        console.error('Ошибка загрузки формы из localStorage:', error);
+        
+    } catch (e) {
+        console.error('Критическая ошибка инициализации:', e);
+        alert('Ошибка загрузки приложения. Попробуйте обновить страницу.');
     }
-    
-    try {
-        const rawSettings = localStorage.getItem(STORAGE_KEYS.settings);
-        if (rawSettings) {
-            const settings = JSON.parse(rawSettings);
-            if (settings.theme) state.theme = settings.theme;
-            if (typeof settings.autoSave === 'boolean') state.autoSave = settings.autoSave;
-            if (typeof settings.vibration === 'boolean') state.vibration = settings.vibration;
-            if (typeof settings.inspectionNotifications === 'boolean') state.inspectionNotifications = settings.inspectionNotifications;
-            if (typeof settings.reminderHours === 'number') state.reminderHours = settings.reminderHours;
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки настроек из localStorage:', error);
-    }
-}
+});

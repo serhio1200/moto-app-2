@@ -1,6 +1,3 @@
-/* style.css - Внешний вид приложения МотоДиагностика PRO */
-
-/* Переменные цветов для светлой и темной темы */
 :root {
     --primary-color: #6366F1;
     --primary-dark: #4F46E5;
@@ -35,7 +32,6 @@
     --shadow-hover: 0 8px 30px rgba(0,0,0,0.35);
 }
 
-/* Базовые стили */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -89,7 +85,6 @@ body {
     font-weight: 400;
 }
 
-/* Навигация */
 .nav-tabs {
     display: flex;
     background: var(--card-bg);
@@ -138,7 +133,6 @@ body {
 .nav-tab .tab-icon { font-size: 1.1rem; margin-bottom: 2px; }
 .nav-tab .tab-text { font-size: 0.65rem; line-height: 1.2; }
 
-/* Контент вкладок */
 .tab-content {
     display: none;
     padding: 20px 16px;
@@ -152,7 +146,6 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Карточки */
 .card {
     background: var(--card-bg);
     border-radius: 16px;
@@ -176,7 +169,6 @@ body {
     letter-spacing: -0.025em;
 }
 
-/* Формы */
 .form-group { margin-bottom: 20px; }
 .form-row {
     display: grid;
@@ -213,7 +205,6 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(-2px);
 }
 
-/* Стили для двойного поля пробега */
 .mileage-row {
     display: flex;
     align-items: center;
@@ -270,7 +261,6 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Кнопки */
 .btn {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
@@ -302,7 +292,6 @@ input:focus, select:focus, textarea:focus {
 .btn-danger { background: linear-gradient(135deg, var(--danger-color), #DC2626); }
 .btn-success { background: linear-gradient(135deg, var(--success-color), #059669); }
 
-/* Индикатор прогресса */
 .progress-container { margin: 20px 0; }
 .progress-bar {
     height: 8px; background: var(--border-color);
@@ -325,7 +314,6 @@ input:focus, select:focus, textarea:focus {
 
 .progress-text { text-align: center; font-size: 0.8rem; color: var(--text-light); font-weight: 500; }
 
-/* Сообщения */
 .alert {
     padding: 16px; border-radius: 12px; margin: 16px 0; font-weight: 500;
     animation: slideIn 0.4s ease; border-left: 4px solid;
@@ -335,7 +323,6 @@ input:focus, select:focus, textarea:focus {
 .alert-info { background: rgba(99,102,241,0.1); color: var(--primary-color); border-left-color: var(--primary-color); }
 .alert-warning { background: rgba(245,158,11,0.1); color: var(--warning-color); border-left-color: var(--warning-color); }
 
-/* Вывод отчета */
 .output-container {
     background: var(--card-bg); border-radius: 12px; padding: 20px; margin-top: 20px;
     border: 1px solid var(--border-color); white-space: pre-wrap;
@@ -344,7 +331,6 @@ input:focus, select:focus, textarea:focus {
 }
 .output-container:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
-/* База данных */
 .search-box { position: relative; margin-bottom: 20px; }
 .search-box input { padding-left: 44px; }
 .search-icon {
@@ -364,7 +350,6 @@ input:focus, select:focus, textarea:focus {
 .report-actions { display: flex; gap: 6px; }
 .action-btn { padding: 6px 10px; border: none; border-radius: 8px; font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease; font-weight: 600; }
 
-/* Статистика */
 .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
 .stat-card {
     background: var(--card-bg); border-radius: 14px; padding: 16px; text-align: center;
@@ -374,7 +359,6 @@ input:focus, select:focus, textarea:focus {
 .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin: 6px 0; letter-spacing: -0.025em; }
 .stat-label { font-size: 0.8rem; color: var(--text-light); font-weight: 500; }
 
-/* Grid buttons */
 .grid-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
 .grid-btn {
     background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
@@ -382,7 +366,6 @@ input:focus, select:focus, textarea:focus {
 }
 .grid-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .form-row { grid-template-columns: 1fr; }
     .nav-tab { font-size: 0.65rem; padding: 12px 4px; }
@@ -406,7 +389,6 @@ input:focus, select:focus, textarea:focus {
     .nav-tab .tab-text { font-size: 0.55rem; }
 }
 
-/* Утилиты */
 .text-center { text-align: center; }
 .mt-10 { margin-top: 10px; }
 .mt-20 { margin-top: 20px; }
@@ -418,7 +400,6 @@ input:focus, select:focus, textarea:focus {
 .justify-between { justify-content: space-between; }
 .gap-10 { gap: 10px; }
 
-/* Кнопка "Наверх" */
 .scroll-to-top {
     position: fixed; bottom: 80px; right: 16px; width: 50px; height: 50px; border-radius: 50%;
     background: var(--primary-color); color: white; border: none; font-size: 20px; cursor: pointer;
@@ -428,16 +409,6 @@ input:focus, select:focus, textarea:focus {
 .scroll-to-top.visible { display: flex; }
 .scroll-to-top:active { transform: scale(0.95); }
 
-/* Переключатель темы в шапке */
-.theme-toggle-header {
-    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
-    width: 40px; height: 40px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; transition: all 0.3s ease;
-}
-.theme-toggle-header:active { transform: translateY(-50%) scale(0.9); }
-
-/* Настройки */
 .settings-group { margin-bottom: 24px; }
 .settings-label { font-weight: 600; margin-bottom: 10px; color: var(--text-color); font-size: 0.95rem; }
 .settings-description { font-size: 0.8rem; color: var(--text-light); margin-bottom: 14px; }
@@ -450,7 +421,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
 .toggle-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border-color); }
 .toggle-label { font-weight: 500; color: var(--text-color); }
 
-/* Проверки */
 .inspection-fields {
     background: rgba(99, 102, 241, 0.05); border-radius: 12px; padding: 16px; margin-top: 14px; border: 2px dashed var(--primary-color);
 }
@@ -473,13 +443,11 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
 .badge-success { background: rgba(16,185,129,0.1); color: var(--success-color); }
 .badge-info { background: rgba(99,102,241,0.1); color: var(--primary-color); }
 
-/* Анимации */
 .pulse { animation: pulse 2s infinite; }
 @keyframes pulse { 0%{ transform: scale(1);} 50%{ transform: scale(1.05);} 100%{ transform: scale(1);} }
 .shake { animation: shake 0.5s; }
 @keyframes shake { 0%,100%{ transform: translateX(0);} 25%{ transform: translateX(-6px);} 75%{ transform: translateX(6px);} }
 
-/* iPhone safe areas */
 @supports(padding: max(0px)) {
     .app-header, .tab-content, .nav-tabs {
         padding-left: max(16px, env(safe-area-inset-left));
@@ -491,7 +459,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
     }
 }
 
-/* Модальное окно отчёта */
 .modal { 
     position: fixed; 
     top:0; left:0; 
@@ -559,7 +526,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
 }
 .identifier-item:last-child { margin-bottom:0; border-bottom:none; }
 
-/* Toast - обновленные стили для расширенных уведомлений */
 #toastContainer {
     position: fixed;
     bottom: calc(20px + var(--safe-area-inset-bottom));
@@ -600,7 +566,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
 .toast-info { border-left-color: var(--primary-color); }
 .toast-warning { border-left-color: var(--warning-color); }
 
-/* Расширенные toast для подсказок */
 .toast-enhanced {
     max-width: 400px;
     text-align: left;
@@ -637,7 +602,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
     font-weight: 600;
 }
 
-/* Индикатор сохранения */
 .save-indicator {
     position: fixed;
     top: 20px;
@@ -654,7 +618,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
 }
 .save-indicator.visible { opacity: 1; transform: translateY(0); }
 
-/* Tooltip */
 .tooltip {
     position: fixed;
     background: var(--card-bg);
@@ -670,7 +633,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
     pointer-events: none;
 }
 
-/* Конвертер пробега */
 .mileage-conversion {
     font-size: 0.75rem;
     color: var(--text-light);
@@ -693,7 +655,6 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
     }
 }
 
-/* Анимация пульсации для полей с ошибками */
 @keyframes errorPulse {
     0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
     70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
@@ -704,13 +665,148 @@ input:checked + .toggle-slider:before { transform: translateX(24px); }
     animation: errorPulse 1.5s infinite;
 }
 
-/* Улучшаем видимость ошибочных полей */
 input:invalid, select:invalid {
     border-color: var(--danger-color) !important;
 }
 
-/* Стиль для обязательных полей */
 .required-field::after {
     content: " *";
     color: var(--danger-color);
 }
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+}
+
+.toast-close:hover {
+    color: var(--text-color);
+}
+
+.inspection-item.priority-high {
+    border-left: 4px solid var(--danger-color);
+}
+
+.inspection-item.priority-medium {
+    border-left: 4px solid var(--warning-color);
+}
+
+.inspection-item.priority-low {
+    border-left: 4px solid var(--success-color);
+}
+
+.priority-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.priority-high { background: rgba(239, 68, 68, 0.1); color: var(--danger-color); }
+.priority-medium { background: rgba(245, 158, 11, 0.1); color: var(--warning-color); }
+.priority-low { background: rgba(16, 185, 129, 0.1); color: var(--success-color); }
+
+.photo-upload-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: 12px;
+    border: 2px dashed var(--primary-color);
+}
+
+.photo-upload-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.photo-upload-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+}
+
+.photo-upload-input:hover {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.photo-preview-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.photo-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.photo-preview-item:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.photo-preview-img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-counter {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 8px;
+    text-align: center;
+}
+
+.photo-storage-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid var(--warning-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--warning-color);
+}
+
+.text-sm { font-size: 0.8rem; }
+.text-xs { font-size: 0.7rem; }

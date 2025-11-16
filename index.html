@@ -16,19 +16,20 @@
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAxMk0xMiA2TDEyIDE4TTYgMTJIMThaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cjwvc3ZnPgo=">
     
-    <!-- Подключение CSS -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Подключаем библиотеки для PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Шапка -->
         <header class="app-header">
             <h1>🏍️ МотоДиагностика PRO</h1>
             <p>Профессиональный подбор и диагностика мотоциклов</p>
-            <button class="theme-toggle-header" id="themeToggleHeader" aria-label="Переключить тему">🌓</button>
         </header>
 
-        <!-- Навигация -->
         <nav class="nav-tabs">
             <button class="nav-tab active" data-tab="report">
                 <span class="tab-icon">📊</span>
@@ -52,12 +53,10 @@
             </button>
         </nav>
 
-        <!-- Вкладка ОТЧЕТ -->
         <div id="report-tab" class="tab-content active">
             <div class="card">
                 <h2 class="section-title">Создание диагностического отчета</h2>
                 
-                <!-- Индикатор прогресса -->
                 <div class="progress-container">
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
@@ -65,12 +64,10 @@
                     <div class="progress-text" id="progressText">Заполните основные данные</div>
                 </div>
 
-                <!-- Уведомления -->
                 <div class="alert alert-success hidden" id="successAlert"></div>
                 <div class="alert alert-info hidden" id="savingsAlert"></div>
 
                 <form id="diagnosticForm">
-                    <!-- Основные данные -->
                     <div class="section-title">📋 Основные данные</div>
                     <div class="card">
                         <div class="form-row">
@@ -123,7 +120,6 @@
                             </div>
                         </div>
 
-                        <!-- VIN, номер двигателя и гос. номер -->
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="vin">VIN / Номер рамы</label>
@@ -208,7 +204,6 @@
                             </div>
                         </div>
 
-                        <!-- Добавляем поле для номера аукционного лота -->
                         <div class="form-group hidden" id="auctionLotNumberGroup">
                             <label for="auction_lot_number">Номер аукционного листа или ссылка на лот</label>
                             <input type="text" id="auction_lot_number" name="auction_lot_number" placeholder="Например: 1234567 или https://..."
@@ -216,7 +211,6 @@
                         </div>
                     </div>
 
-                    <!-- Документы и юридическая часть -->
                     <div class="section-title">📑 Документы и юридическая часть</div>
                     <div class="card">
                         <div class="form-row">
@@ -228,52 +222,313 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="legal_status">Статус юридической чистоты</label>
-                                <select id="legal_status" name="legal_status" data-tooltip="Результат юридической проверки. Указывает на наличие или отсутствие ограничений, залогов, арестов и других юридических проблем">
+                                <label for="pts_type">Тип ПТС</label>
+                                <select id="pts_type" name="pts_type" data-tooltip="Выберите тип паспорта транспортного средства">
+                                    <option value="">-- Выберите тип ПТС --</option>
+                                    <option value="Бумажный ПТС">Бумажный ПТС</option>
+                                    <option value="Дубликат Бумажный ПТС">Дубликат Бумажный ПТС</option>
+                                    <option value="Электронные (ЭПТС)">Электронные (ЭПТС)</option>
+                                    <option value="Не выдан">Не выдан</option>
+                                    <option value="Другое">Другое</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- НОВЫЙ РАЗДЕЛ: СОВПАДЕНИЕ НОМЕРОВ -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="vin_match">Совпадение VIN-номера</label>
+                                <select id="vin_match" name="vin_match" data-tooltip="Проверка совпадения VIN-номера на мотоцикле и в документах">
+                                    <option value="">-- Выберите --</option>
+                                    <option value="✅ Совпадает">✅ Совпадает</option>
+                                    <option value="❌ Не совпадает">❌ Не совпадает</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="engine_number_match">Совпадение номеров Двигателя</label>
+                                <select id="engine_number_match" name="engine_number_match" data-tooltip="Проверка совпадения номера двигателя на мотоцикле и в документах">
+                                    <option value="">-- Выберите --</option>
+                                    <option value="✅ Совпадает">✅ Совпадает</option>
+                                    <option value="❌ Не совпадает">❌ Не совпадает</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- СУЩЕСТВУЮЩИЙ РАЗДЕЛ: СТРАХОВКА -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="insurance">Страховка</label>
+                                <select id="insurance" name="insurance" data-tooltip="Статус страхового полиса">
                                     <option value="">-- Выберите статус --</option>
-                                    <option value="Чистый, ограничений нет">Чистый, ограничений нет</option>
-                                    <option value="Есть ограничения / аресты">Есть ограничения / аресты</option>
-                                    <option value="Есть залоги / кредиты">Есть залоги / кредиты</option>
-                                    <option value="Пробег по базам вызывает вопросы">Пробег по базам вызывает вопросы</option>
-                                    <option value="Проверка не проводилась">Проверка не проводилась</option>
+                                    <option value="Действующая до">✅ Действующая до</option>
+                                    <option value="Отсутствует">❌ Отсутствует</option>
+                                </select>
+                                <input type="date" id="insurance_date" name="insurance_date" class="hidden mt-10" 
+                                       data-tooltip="Дата окончания действия страховки">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tech_inspection">Техосмотр</label>
+                                <select id="tech_inspection" name="tech_inspection" data-tooltip="Статус технического осмотра">
+                                    <option value="">-- Выберите статус --</option>
+                                    <option value="Действующий до">✅ Действующий до</option>
+                                    <option value="Отсутствует">❌ Отсутствует</option>
+                                </select>
+                                <input type="date" id="tech_inspection_date" name="tech_inspection_date" class="hidden mt-10" 
+                                       data-tooltip="Дата окончания действия техосмотра">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="legal_status">Юридический статус мотоцикла</label>
+                                <select id="legal_status" name="legal_status" data-tooltip="Выберите юридический статус мотоцикла для просмотра подробного описания">
+                                    <option value="">-- Выберите статус --</option>
+                                    <option value="На учете Физического Лица">На учете Физического Лица</option>
+                                    <option value="На учете Юридического Лица">На учете Юридического Лица</option>
+                                    <option value="Регистрация приостановлена">Регистрация приостановлена</option>
+                                    <option value="Продажа ТС не поставленного на учёт">Продажа ТС не поставленного на учёт</option>
+                                    <option value="Собственника спортивного инвентаря">Собственника спортивного инвентаря</option>
+                                    <option value="Другое">Другое</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="legal_comment">Комментарий по документам</label>
-                            <textarea id="legal_comment" name="legal_comment" rows="2" placeholder="Например: проверка через Автокод и ГИБДД, ограничений нет, ПТС оригинал..." data-tooltip="Дополнительная информация о документах: оригинальность ПТС, совпадение номеров, история владения и т.д."></textarea>
+                            <textarea id="legal_comment" name="legal_comment" rows="2" placeholder="Например: проверка через Автокод и ГИБДД, ограничений нет, ПТС оригинал..." data-tooltip="Дополнительная информация о документам: оригинальность ПТС, совпадение номеров, история владения и т.д."></textarea>
                         </div>
                     </div>
 
-                    <!-- Финансовые данные -->
                     <div class="section-title">💰 Финансовые данные</div>
                     <div class="card">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="price">Цена продавца</label>
-                                <input type="text" id="price" name="price" placeholder="350 000 руб" data-tooltip="Изначальная цена, запрашиваемая продавцом за мотоцикл">
+                                <input type="text" id="price" name="price" placeholder="350 тыс." data-tooltip="Изначальная цена, запрашиваемая продавцом за мотоцикл. Формат: 350 тыс., 1.2 млн, 500000">
                             </div>
 
                             <div class="form-group">
                                 <label for="objective_cost">Объективная стоимость</label>
-                                <input type="text" id="objective_cost" name="objective_cost" placeholder="320 000 руб" data-tooltip="Реальная рыночная стоимость мотоцикла с учетом его состояния, пробега и рыночной конъюнктуры">
+                                <input type="text" id="objective_cost" name="objective_cost" placeholder="320 тыс." data-tooltip="Реальная рыночная стоимость мотоцикла с учетом его состояния, пробега и рыночной конъюнктуры. Формат: 320 тыс., 1 млн, 450000">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="seller_discount">Скидка с продавца</label>
-                                <input type="text" id="seller_discount" name="seller_discount" placeholder="15 000 руб" data-tooltip="Сумма, на которую удалось снизить цену в ходе переговоров с продавцом">
+                                <input type="text" id="seller_discount" name="seller_discount" placeholder="15 тыс." data-tooltip="Сумма, на которую удалось снизить цену в ходе переговоров с продавцом. Формат: 15 тыс., 20 тыс., 5000">
                             </div>
 
                             <div class="form-group">
                                 <label for="investment_cost">Стоимость вложений</label>
-                                <input type="text" id="investment_cost" name="investment_cost" placeholder="5 000 руб" data-tooltip="Предполагаемые затраты на ремонт, обслуживание, замену расходников и другие необходимые вложения">
+                                <input type="text" id="investment_cost" name="investment_cost" placeholder="5 тыс." data-tooltip="Предполагаемые затраты на ремонт, обслуживание, замену расходников и другие необходимые вложения. Формат: 5 тыс., 10 тыс., 3000">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Выводы и решение -->
+                    <div class="section-title">🔧 Проверка мотоцикла</div>
+                    <div class="card">
+                        <!-- ОБНОВЛЕННЫЕ СЕКЦИИ -->
+                        <div class="form-group">
+                            <label for="inspection_exterior">Внешний Вид Титульный</label>
+                            <textarea id="inspection_exterior" name="inspection_exterior" rows="2" placeholder="Состояние лакокрасочного покрытия, пластика, хрома..." data-tooltip="Внешний вид мотоцикла: царапины, сколы, коррозия"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии внешнего вида титульного (максимум 1)</label>
+                                <input type="file" class="photo-upload-input" data-section="exterior" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="exterior"></div>
+                                <div class="photo-counter" data-section="exterior">Загружено: 0/1</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_geometry">Осмотр Фото Общий</label>
+                            <textarea id="inspection_geometry" name="inspection_geometry" rows="2" placeholder="Общие фотографии мотоцикла..." data-tooltip="Общие фотографии мотоцикла"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии общего осмотра (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="geometry" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="geometry"></div>
+                                <div class="photo-counter" data-section="geometry">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_engine">Состояние ЛКП</label>
+                            <textarea id="inspection_engine" name="inspection_engine" rows="2" placeholder="Состояние лакокрасочного покрытия..." data-tooltip="Состояние лакокрасочного покрытия"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии состояния ЛКП (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="engine" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="engine"></div>
+                                <div class="photo-counter" data-section="engine">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_consumables">Состояние Сиденья</label>
+                            <textarea id="inspection_consumables" name="inspection_consumables" rows="2" placeholder="Состояние сиденья..." data-tooltip="Состояние сиденья"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии состояния сиденья (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="consumables" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="consumables"></div>
+                                <div class="photo-counter" data-section="consumables">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_electrical">Осмотр Оптики</label>
+                            <textarea id="inspection_electrical" name="inspection_electrical" rows="2" placeholder="Состояние оптики..." data-tooltip="Осмотр оптики"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии осмотра оптики (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="electrical" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="electrical"></div>
+                                <div class="photo-counter" data-section="electrical">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_suspension">Рама, Швы, Вторичная окраска</label>
+                            <textarea id="inspection_suspension" name="inspection_suspension" rows="2" placeholder="Состояние рамы, швов, вторичной окраски..." data-tooltip="Рама, швы, вторичная окраска"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии рамы, швов, вторичной окраски (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="suspension" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="suspension"></div>
+                                <div class="photo-counter" data-section="suspension">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_fuel_system">Криминал, Вин номера, Номера Двигателя</label>
+                            <textarea id="inspection_fuel_system" name="inspection_fuel_system" rows="2" placeholder="Проверка на криминал, VIN номера, номера двигателя..." data-tooltip="Криминал, VIN номера, номера двигателя"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии проверки на криминал, VIN номеров, номеров двигателя (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="fuel_system" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="fuel_system"></div>
+                                <div class="photo-counter" data-section="fuel_system">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_brake_system">Геометрия, Подрамника, руля, вилки…</label>
+                            <textarea id="inspection_brake_system" name="inspection_brake_system" rows="2" placeholder="Геометрия, подрамника, руля, вилки..." data-tooltip="Геометрия, подрамника, руля, вилки"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии геометрии, подрамника, руля, вилки (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="brake_system" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="brake_system"></div>
+                                <div class="photo-counter" data-section="brake_system">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_cooling_system">Органы управления</label>
+                            <textarea id="inspection_cooling_system" name="inspection_cooling_system" rows="2" placeholder="Состояние органов управления..." data-tooltip="Органы управления"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии органов управления (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="cooling_system" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="cooling_system"></div>
+                                <div class="photo-counter" data-section="cooling_system">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_controls">Моторный Узел</label>
+                            <textarea id="inspection_controls" name="inspection_controls" rows="2" placeholder="Состояние моторного узла..." data-tooltip="Моторный узел"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии моторного узла (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="controls" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="controls"></div>
+                                <div class="photo-counter" data-section="controls">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_additional_equipment">Топливная система</label>
+                            <textarea id="inspection_additional_equipment" name="inspection_additional_equipment" rows="2" placeholder="Состояние топливной системы..." data-tooltip="Топливная система"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии топливной системы (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="additional_equipment" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="additional_equipment"></div>
+                                <div class="photo-counter" data-section="additional_equipment">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_bodywork">Система охлаждения</label>
+                            <textarea id="inspection_bodywork" name="inspection_bodywork" rows="2" placeholder="Состояние системы охлаждения..." data-tooltip="Система охлаждения"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии системы охлаждения (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="bodywork" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="bodywork"></div>
+                                <div class="photo-counter" data-section="bodywork">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        
+                        <!-- НОВЫЕ СЕКЦИИ -->
+                        <div class="form-group">
+                            <label for="inspection_electrical2">Электрооборудование</label>
+                            <textarea id="inspection_electrical2" name="inspection_electrical2" rows="2" placeholder="Состояние электрооборудования..." data-tooltip="Электрооборудование"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии электрооборудования (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="electrical2" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="electrical2"></div>
+                                <div class="photo-counter" data-section="electrical2">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_brake_system2">Тормозная система</label>
+                            <textarea id="inspection_brake_system2" name="inspection_brake_system2" rows="2" placeholder="Состояние тормозной системы..." data-tooltip="Тормозная система"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии тормозной системы (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="brake_system2" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="brake_system2"></div>
+                                <div class="photo-counter" data-section="brake_system2">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_drive">Привод</label>
+                            <textarea id="inspection_drive" name="inspection_drive" rows="2" placeholder="Состояние привода..." data-tooltip="Привод"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии привода (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="drive" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="drive"></div>
+                                <div class="photo-counter" data-section="drive">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_tires">Резина</label>
+                            <textarea id="inspection_tires" name="inspection_tires" rows="2" placeholder="Состояние резины..." data-tooltip="Резина"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии резины (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="tires" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="tires"></div>
+                                <div class="photo-counter" data-section="tires">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_suspension_front_rear">Подвеска перед, зад</label>
+                            <textarea id="inspection_suspension_front_rear" name="inspection_suspension_front_rear" rows="2" placeholder="Состояние передней и задней подвески..." data-tooltip="Подвеска передняя и задняя"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии передней и задней подвески (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="suspension_front_rear" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="suspension_front_rear"></div>
+                                <div class="photo-counter" data-section="suspension_front_rear">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_computer_diagnostics">Компьютерная Диагностика</label>
+                            <textarea id="inspection_computer_diagnostics" name="inspection_computer_diagnostics" rows="2" placeholder="Результаты компьютерной диагностики..." data-tooltip="Компьютерная диагностика"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии компьютерной диагностики (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="computer_diagnostics" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="computer_diagnostics"></div>
+                                <div class="photo-counter" data-section="computer_diagnostics">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inspection_additional_equipment2">Дополнительное оборудование</label>
+                            <textarea id="inspection_additional_equipment2" name="inspection_additional_equipment2" rows="2" placeholder="Состояние дополнительного оборудования..." data-tooltip="Дополнительное оборудование"></textarea>
+                            <div class="photo-upload-section">
+                                <label class="photo-upload-label">📷 Фотографии дополнительного оборудования (максимум 10)</label>
+                                <input type="file" class="photo-upload-input" data-section="additional_equipment2" accept="image/*" multiple>
+                                <div class="photo-preview-container" data-section="additional_equipment2"></div>
+                                <div class="photo-counter" data-section="additional_equipment2">Загружено: 0/10</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row mt-20">
+                            <button type="button" class="btn btn-success" id="generateClientReportBtn" data-tooltip="Сформировать красивый отчет для клиента">📄 Сформировать отчет для клиента</button>
+                            <button type="button" class="btn btn-secondary" id="generatePDFReportBtn" data-tooltip="Скачать PDF отчет со всеми данными и фотографиями">📊 Скачать PDF отчет</button>
+                        </div>
+                    </div>
+
                     <div class="section-title">💡 Выводы и решение</div>
                     <div class="card">
                         <div class="form-group">
@@ -296,7 +551,6 @@
                             </select>
                         </div>
 
-                        <!-- Поля для запланированной проверки -->
                         <div class="inspection-fields hidden" id="inspectionFields">
                             <div class="section-title" style="font-size: 0.95rem;">📅 Данные для проверки</div>
                             
@@ -336,7 +590,6 @@
                         </div>
                     </div>
 
-                    <!-- Кнопки действий -->
                     <button type="button" class="btn pulse" id="generateBtn" data-tooltip="Сгенерировать готовый отчет на основе заполненных данных">🔄 Сгенерировать отчет</button>
                     
                     <div class="form-row mt-10">
@@ -346,7 +599,6 @@
                 </form>
             </div>
 
-            <!-- Вывод отчета -->
             <div class="card hidden" id="outputCard">
                 <div class="section-title">📄 Сгенерированный отчет</div>
                 <div class="output-container" id="output"></div>
@@ -354,7 +606,6 @@
             </div>
         </div>
 
-        <!-- Вкладка ПРОВЕРКИ -->
         <div id="inspections-tab" class="tab-content">
             <div class="card">
                 <h2 class="section-title">📅 Запланированные проверки</h2>
@@ -363,14 +614,12 @@
                     <input type="text" id="searchInspections" placeholder="Поиск по марке, модели или адресу..." data-tooltip="Поиск по всем запланированным проверкам">
                 </div>
                 <div class="form-row">
-                    <button class="btn btn-secondary" id="exportInspectionsBtn" data-tooltip="Экспортировать список проверок в файл">📤 Экспорт проверок</button>
-                    <button class="btn btn-warning" id="importInspectionsBtn" data-tooltip="Импортировать проверки из файла">📥 Импорт проверок</button>
+                    <button class="btn btn-success" id="clearCompletedInspectionsBtn" data-tooltip="Удалить все завершенные проверки">🗑️ Очистить завершенные</button>
                 </div>
                 <div class="reports-list" id="inspectionsList"></div>
             </div>
         </div>
 
-        <!-- Вкладка БАЗА -->
         <div id="database-tab" class="tab-content">
             <div class="card">
                 <h2 class="section-title">🗃️ База отчетов</h2>
@@ -378,15 +627,10 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" id="searchReports" placeholder="Поиск по марке, модели, VIN или году..." data-tooltip="Поиск по всем сохраненным отчетам">
                 </div>
-                <div class="form-row">
-                    <button class="btn btn-secondary" id="exportBtn" data-tooltip="Экспортировать всю базу отчетов в файл">📤 Экспорт базы</button>
-                    <button class="btn btn-warning" id="importBtn" data-tooltip="Импортировать отчеты из файла">📥 Импорт базы</button>
-                </div>
                 <div class="reports-list" id="reportsList"></div>
             </div>
         </div>
 
-        <!-- Вкладка СТАТИСТИКА -->
         <div id="stats-tab" class="tab-content">
             <div class="card">
                 <h2 class="section-title">📈 Статистика</h2>
@@ -409,7 +653,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Средняя экономия</div>
-                        <div class="stat-value" id="avgSavings">0 ₽</div>
+                        <div class="stat-value" id="avgSavings">0 тыс.</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Популярная марка</div>
@@ -426,6 +670,14 @@
                         <div class="stat-label">Выполнено проверок</div>
                         <div class="stat-value" id="completedInspections">0</div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Активные проверки</div>
+                        <div class="stat-value" id="activeInspections">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Просроченные</div>
+                        <div class="stat-value" id="overdueInspections">0</div>
+                    </div>
                 </div>
 
                 <button class="btn btn-secondary" id="generateStatsBtn" data-tooltip="Сгенерировать готовый пост со статистикой для социальных сетей">📊 Сгенерировать пост статистики</button>
@@ -435,7 +687,6 @@
             </div>
         </div>
 
-        <!-- Вкладка НАСТРОЙКИ -->
         <div id="settings-tab" class="tab-content">
             <div class="card">
                 <h2 class="section-title">⚙️ Настройки приложения</h2>
@@ -472,14 +723,6 @@
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
-                    
-                    <div class="toggle-container">
-                        <span class="toggle-label">Виброотклик</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="vibration" checked data-tooltip="Использовать вибрацию на мобильных устройствах">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
 
                     <div class="toggle-container">
                         <span class="toggle-label">Уведомления о проверках</span>
@@ -501,8 +744,8 @@
                     <div class="settings-description">Управление данными приложения</div>
                     
                     <div class="form-row">
-                        <button class="btn btn-secondary" id="exportSettingsBtn" data-tooltip="Экспортировать все настройки и данные приложения">💾 Экспорт настроек</button>
-                        <button class="btn btn-warning" id="importSettingsBtn" data-tooltip="Импортировать настройки и данные из файла">📥 Импорт настроек</button>
+                        <button class="btn btn-secondary" id="exportAllDataBtn" data-tooltip="Экспортировать все настройки и данные приложения">💾 Экспорт всех данных</button>
+                        <button class="btn btn-warning" id="importAllDataBtn" data-tooltip="Импортировать настройки и данные из файла">📥 Импорт всех данных</button>
                     </div>
                     
                     <button class="btn btn-danger mt-10" id="clearStorageBtn" data-tooltip="Полностью очистить все данные приложения (действие необратимо)">🗑️ Очистить все данные</button>
@@ -512,7 +755,7 @@
             <div class="card mt-20">
                 <h2 class="section-title">ℹ️ О приложении</h2>
                 <div class="settings-group">
-                    <p><strong>Версия:</strong> 2.4.0 PRO FINAL</p>
+                    <p><strong>Версия:</strong> 2.6.0 PRO FINAL</p>
                     <p><strong>Разработчик:</strong> Сергей Ландик</p>
                     <p><strong>Контакты:</strong> 8 950 005-05-08</p>
                     <p><strong>Сайт:</strong> motopodbor.ru</p>
@@ -524,10 +767,8 @@
         </div>
     </div>
 
-    <!-- Кнопка "Наверх" -->
     <button class="scroll-to-top" id="scrollToTopBtn" aria-label="Наверх" data-tooltip="Вернуться к началу страницы">↑</button>
 
-    <!-- Модальное окно для просмотра отчета -->
     <div id="reportModal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -550,12 +791,11 @@
         </div>
     </div>
 
-    <!-- Индикатор сохранения -->
     <div class="save-indicator" id="saveIndicator">💾 Сохранено</div>
 
     <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Подключение JavaScript -->
-    <script src="script.js"></script>
+    <!-- Подключаем JavaScript -->
+    <script src="app.js"></script>
 </body>
 </html>
